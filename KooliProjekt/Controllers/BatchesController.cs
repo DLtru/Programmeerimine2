@@ -19,9 +19,10 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Batches
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index( int page = 1)
         {
-            return View(await _context.Batches.ToListAsync());
+            var pagedBatchesEntries = await _context.Batches.GetPagedAsync(page, 5);
+            return View(pagedBatchesEntries);
         }
 
         // GET: Batches/Details/5

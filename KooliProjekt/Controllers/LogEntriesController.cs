@@ -19,10 +19,10 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: LogEntries
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var applicationDbContext = _context.LogEntries.Include(l => l.User);
-            return View(await applicationDbContext.ToListAsync());
+            var pagedLogEntries = await _context.LogEntries.GetPagedAsync(page, 5);
+            return View(pagedLogEntries);
         }
 
         // GET: LogEntries/Details/5

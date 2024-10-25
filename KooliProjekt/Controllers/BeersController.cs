@@ -19,9 +19,10 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Beers
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index( int page = 1)
         {
-            return View(await _context.Beers.ToListAsync());
+            var pagedBeersEntries = await _context.Beers.GetPagedAsync(page, 5);
+            return View(pagedBeersEntries);
         }
 
         // GET: Beers/Details/5

@@ -19,10 +19,10 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: TastingEntries
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var applicationDbContext = _context.TastingEntries.Include(t => t.Batch).Include(t => t.User);
-            return View(await applicationDbContext.ToListAsync());
+            var pagedTastingEntries = await _context.TastingEntries.GetPagedAsync (page, 5);
+            return View(pagedTastingEntries);
         }
 
         // GET: TastingEntries/Details/5
