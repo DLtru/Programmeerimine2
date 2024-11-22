@@ -1,14 +1,21 @@
-﻿namespace KooliProjekt.Data
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace KooliProjekt.Data
 {
     public class Batch
     {
         public int Id { get; set; }
 
         public DateTime Date { get; set; }
-        public required string Code { get; set; }
-        public required string Description { get; set; }
-        public required Beer Beer { get; set; }
-        public required ICollection<LogEntry> LogEntri { get; set; }
-        public required ICollection<TastingEntry> TastingEntry { get; set; }
+        [Required]
+        public string Code { get; set; }
+        [Required]
+        public string Description { get; set; }
+        [Required]
+        public Beer Beer { get; set; }
+        [Required]
+        public ICollection<LogEntry> LogEntri { get; set; }
+        [Required]
+        public ICollection<TastingEntry> TastingEntry { get; set; }
     }
 }

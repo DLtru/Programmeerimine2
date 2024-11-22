@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace KooliProjekt.Data
 {
@@ -7,12 +8,14 @@ namespace KooliProjekt.Data
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public int Rating { get; set; }
-        public required string Comments { get; set; }
+        [Required]
+        public string Comments { get; set; }
 
         public int BatchId { get; set; }
         public IdentityUser User { get; set; }
         public string UserId { get; set; }
-        public required Batch Batch { get; set; } 
+        [Required]
+        public Batch Batch { get; set; }
     }
 
 }
