@@ -5,6 +5,7 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-KooliProjekt-115D48C3-5103-4503-B901-745AFD125276</UserSecretsId>
+    <StartupObject>KooliProjekt.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Shared\Pager\" />
+    <Folder Include="Views\Shared\Components\Pager\" />
   </ItemGroup>
 
 </Project>

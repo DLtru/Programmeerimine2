@@ -1,4 +1,5 @@
 using KooliProjekt.Data;
+using KooliProjekt.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,12 @@ namespace KooliProjekt
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddScoped<IBatchService, BatchService>();
+
+            builder.Services.AddScoped<IBeerService, BeerService>();
+
+            builder.Services.AddScoped<ITastingEntryService, TastingEntryService>();
 
             var app = builder.Build();
 
@@ -54,6 +61,7 @@ namespace KooliProjekt
                 context.Database.EnsureCreated();
                 SeedData.Generate(context, userManager);
             }
+
             app.Run();
         }
     }
