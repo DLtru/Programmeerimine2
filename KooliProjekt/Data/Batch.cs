@@ -17,5 +17,6 @@ namespace KooliProjekt.Data
         public ICollection<LogEntry> LogEntri { get; set; }
         [Required]
         public ICollection<TastingEntry> TastingEntry { get; set; }
+        public bool Done { get; internal set; }
     }
 }

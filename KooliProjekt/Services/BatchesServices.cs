@@ -1,14 +1,11 @@
 ﻿using KooliProjekt.Data;
 using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Models;
-using KooliProjekt.Services;
-
 
 namespace KooliProjekt.Services
 {
     public interface IBatchService
     {
-        Task<List<Batch>> GetPagedBatchesAsync(int page, int pageSize);
+        Task<PagedResult<Batch>> GetPagedBatchesAsync(int page, int pageSize, Search.BatchesSearch searchModel);
         Task<Batch> GetBatchByIdAsync(int id);
         Task AddBatchAsync(Batch batch);
         Task UpdateBatchAsync(Batch batch);
@@ -27,12 +24,45 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<List<Batch>> GetPagedBatchesAsync(int page, int pageSize)
+        public async Task<PagedResult<Batch>> GetPagedBatchesAsync(int page, int pageSize, Search.BatchesSearch searchModel)
         {
-            return await _context.Batches
+            var query = _context.Batches.AsQueryable();
+
+            searchModel = searchModel ?? new Search.BatchesSearch();
+
+            if (!string.IsNullOrWhiteSpace(searchModel.Keyword))
+            {
+                query = query.Where(batch => batch.Code.Contains(searchModel.Keyword) || batch.Description.Contains(searchModel.Keyword));
+            }
+
+
+            if (searchModel.Done != null)
+            {
+                if (searchModel.Done.Value)
+                {
+                    query = query.Where(batch => batch.Done);  
+                }
+                else
+                {
+                    query = query.Where(batch => !batch.Done);  
+                }
+            }
+
+            var totalItems = await query.CountAsync();
+            var batches = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+
+            var result = new PagedResult<Batch>
+            {
+                Results = batches,
+                TotalCount = totalItems,
+                PageIndex = page,
+                PageSize = pageSize
+            };
+
+            return result;
         }
 
         public async Task<Batch> GetBatchByIdAsync(int id)

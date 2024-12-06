@@ -1,28 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Services;
+using KooliProjekt.Search;
 
 namespace KooliProjekt.Controllers
 {
     public class BatchesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBatchService _batchService;
 
-        public BatchesController(ApplicationDbContext context)
+        public BatchesController(ApplicationDbContext context, IBatchService batchService)
         {
             _context = context;
+            _batchService = batchService;
         }
 
         // GET: Batches
-        public async Task<IActionResult> Index( int page = 1)
+        public async Task<IActionResult> Index(int page = 1, string keyword = null, bool? done = null)
         {
-            var pagedBatchesEntries = await _context.Batches.GetPagedAsync(page, 5);
-            return View(pagedBatchesEntries);
+            var searchModel = new BatchesSearch
+            {
+                Keyword = keyword,
+                Done = done
+            };
+
+            var pagedBatchesEntries = await _batchService.GetPagedBatchesAsync(page, 5, searchModel);
+            var model = new BatchesIndexModel
+            {
+                Search = searchModel,
+                Data = pagedBatchesEntries
+            };
+
+            return View(model);
         }
 
         // GET: Batches/Details/5
@@ -50,8 +65,6 @@ namespace KooliProjekt.Controllers
         }
 
         // POST: Batches/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Date,Code,Description")] Batch batch)
@@ -82,8 +95,6 @@ namespace KooliProjekt.Controllers
         }
 
         // POST: Batches/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Code,Description")] Batch batch)
