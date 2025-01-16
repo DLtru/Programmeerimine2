@@ -1,4 +1,4 @@
-namespace KooliProjekt.Models
+﻿namespace KooliProjekt.Models
 {
     public class ErrorViewModel
     {

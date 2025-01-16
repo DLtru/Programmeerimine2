@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using KooliProjekt.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace KooliProjekt.Data
 {
@@ -17,6 +18,6 @@ namespace KooliProjekt.Data
         public ICollection<LogEntry> LogEntri { get; set; }
         [Required]
         public ICollection<TastingEntry> TastingEntry { get; set; }
-        public bool Done { get; internal set; }
+        public bool Done { get; set; }
     }
 }

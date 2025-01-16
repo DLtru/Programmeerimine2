@@ -105,7 +105,6 @@ namespace KooliProjekt.Data
             };
             context.Photos.AddRange(photos);
 
-            // Проверьте, есть ли уже данные в базе
             if (context.TastingEntries.Any())
             {
                 return;
@@ -124,7 +123,7 @@ namespace KooliProjekt.Data
             };
 
             context.TastingEntries.AddRange(tastingEntries);
-
+           
             context.SaveChanges();
         }
     }

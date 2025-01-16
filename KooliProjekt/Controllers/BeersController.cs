@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using KooliProjekt.Services;
+using KooliProjekt.Models;
 using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {
     public class BeersController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IBeerService _beerService;
 
-        public BeersController(ApplicationDbContext context)
+        public BeersController(IBeerService beerService)
         {
-            _context = context;
+            _beerService = beerService;
         }
 
         // GET: Beers
-        public async Task<IActionResult> Index( int page = 1)
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var pagedBeersEntries = await _context.Beers.GetPagedAsync(page, 5);
-            return View(pagedBeersEntries);
+            var pagedBeers = await _beerService.GetPagedBeersAsync(page, 5);
+            return View(pagedBeers);
         }
 
         // GET: Beers/Details/5
@@ -33,8 +29,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var beer = await _context.Beers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var beer = await _beerService.GetBeerByIdAsync(id.Value);
             if (beer == null)
             {
                 return NotFound();
@@ -50,16 +45,13 @@ namespace KooliProjekt.Controllers
         }
 
         // POST: Beers/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description")] Beer beer)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Type")] Beer beer)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(beer);
-                await _context.SaveChangesAsync();
+                await _beerService.AddBeerAsync(beer);
                 return RedirectToAction(nameof(Index));
             }
             return View(beer);
@@ -73,7 +65,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var beer = await _context.Beers.FindAsync(id);
+            var beer = await _beerService.GetBeerByIdAsync(id.Value);
             if (beer == null)
             {
                 return NotFound();
@@ -82,11 +74,9 @@ namespace KooliProjekt.Controllers
         }
 
         // POST: Beers/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Beer beer)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Type")] Beer beer)
         {
             if (id != beer.Id)
             {
@@ -95,22 +85,7 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(beer);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BeerExists(beer.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _beerService.UpdateBeerAsync(beer);
                 return RedirectToAction(nameof(Index));
             }
             return View(beer);
@@ -124,8 +99,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var beer = await _context.Beers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var beer = await _beerService.GetBeerByIdAsync(id.Value);
             if (beer == null)
             {
                 return NotFound();
@@ -139,19 +113,8 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var beer = await _context.Beers.FindAsync(id);
-            if (beer != null)
-            {
-                _context.Beers.Remove(beer);
-            }
-
-            await _context.SaveChangesAsync();
+            await _beerService.DeleteBeerAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool BeerExists(int id)
-        {
-            return _context.Beers.Any(e => e.Id == id);
         }
     }
 }

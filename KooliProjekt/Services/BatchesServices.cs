@@ -1,17 +1,10 @@
-﻿using KooliProjekt.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-
-namespace KooliProjekt.Services
-{
-    public interface IBatchService
-    {
-        Task<PagedResult<Batch>> GetPagedBatchesAsync(int page, int pageSize, Search.BatchesSearch searchModel);
-        Task<Batch> GetBatchByIdAsync(int id);
-        Task AddBatchAsync(Batch batch);
-        Task UpdateBatchAsync(Batch batch);
-        Task DeleteBatchAsync(int id);
-    }
-}
+using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
 
 namespace KooliProjekt.Services
 {
@@ -24,66 +17,51 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<PagedResult<Batch>> GetPagedBatchesAsync(int page, int pageSize, Search.BatchesSearch searchModel)
+        public async Task<PagedResult<Batch>> GetPagedBatchesAsync(int page, int pageSize, BatchesSearch search)
         {
             var query = _context.Batches.AsQueryable();
 
-            searchModel = searchModel ?? new Search.BatchesSearch();
-
-            if (!string.IsNullOrWhiteSpace(searchModel.Keyword))
+            // Применяем фильтры (поиск по ключевым словам и статусу "сделано")
+            if (!string.IsNullOrEmpty(search.Keyword))
             {
-                query = query.Where(batch => batch.Code.Contains(searchModel.Keyword) || batch.Description.Contains(searchModel.Keyword));
+                query = query.Where(b => b.Description.Contains(search.Keyword) || b.Code.Contains(search.Keyword));
             }
-
-
-            if (searchModel.Done != null)
+            if (search.Done.HasValue)
             {
-                if (searchModel.Done.Value)
-                {
-                    query = query.Where(batch => batch.Done);  
-                }
-                else
-                {
-                    query = query.Where(batch => !batch.Done);  
-                }
+                query = query.Where(b => b.Done == search.Done.Value);
             }
 
             var totalItems = await query.CountAsync();
-            var batches = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            var result = new PagedResult<Batch>
+            return new PagedResult<Batch>
             {
-                Results = batches,
-                TotalCount = totalItems,
-                PageIndex = page,
+                Items = items,
+                TotalItems = totalItems,
+                Page = page,
                 PageSize = pageSize
             };
-
-            return result;
         }
 
-        public async Task<Batch> GetBatchByIdAsync(int id)
+        public async Task<Batch> Get(int id)
         {
-            return await _context.Batches
-                .FirstOrDefaultAsync(b => b.Id == id);
+            return await _context.Batches.FindAsync(id);
         }
 
-        public async Task AddBatchAsync(Batch batch)
+        public async Task Save(Batch batch)
         {
-            _context.Batches.Add(batch);
+            if (batch.Id == 0)
+            {
+                _context.Add(batch);
+            }
+            else
+            {
+                _context.Update(batch);
+            }
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateBatchAsync(Batch batch)
-        {
-            _context.Batches.Update(batch);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteBatchAsync(int id)
+        public async Task Delete(int id)
         {
             var batch = await _context.Batches.FindAsync(id);
             if (batch != null)

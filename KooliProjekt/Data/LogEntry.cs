@@ -8,8 +8,6 @@ namespace KooliProjekt.Data
         public int Id { get; set; }
         public DateTime Date { get; set; }
         [Required]
-        public string Desctipyion { get; set; }
-        [Required]
         public IdentityUser User { get; set; }
         [Required]
         public string UserId { get; set; }

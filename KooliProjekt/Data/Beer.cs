@@ -1,16 +1,17 @@
-﻿namespace KooliProjekt.Data
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace KooliProjekt.Models
 {
     public class Beer
     {
         public int Id { get; set; }
-        public required string Name { get; set; }
-        public required string Description { get; set; }
 
-        public IList<Batch> Batches { get; set; }
+        [Required]
+        public string Name { get; set; }
 
-        public Beer()
-        {
-            Batches = new List<Batch>();
-        }
+        public string Description { get; set; }
+
+        [Required]
+        public string Type { get; set; }
     }
 }
