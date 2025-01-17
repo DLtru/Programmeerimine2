@@ -42,7 +42,7 @@
                 <td>@batch.Code</td>
                 <td>@batch.Description</td>
                 <td>@batch.Date.ToShortDateString()</td>
-                @* <td>@(batch.Done ? "Done" : "Not Done")</td> *@
+                <td>@(batch.Done ? "Done" : "Not Done")</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@batch.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@batch.Id">View</a> |
@@ -53,6 +53,36 @@
     </tbody>
 </table>
 
-<div>
-    @(await Component.InvokeAsync<PagerViewComponent>(Model.Data))
+<div class="pagination">
+    @if (Model.Data.TotalCount > 0)
+    {
+        <ul class="pagination">
+            @if (Model.Data.PageIndex > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="@((Model.Data.PageIndex - 1))">Previous</a>
+                </li>
+            }
+
+            @for (var i = 1; i <= Model.Data.TotalCount / Model.Data.PageSize + (Model.Data.TotalCount % Model.Data.PageSize > 0 ? 1 : 0); i++)
+            {
+                <li class="page-item @(i == Model.Data.PageIndex ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                </li>
+            }
+
+            @if (Model.Data.PageIndex < Model.Data.TotalCount / Model.Data.PageSize + (Model.Data.TotalCount % Model.Data.PageSize > 0 ? 1 : 0))
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="@((Model.Data.PageIndex + 1))">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="@((Model.Data.TotalCount / Model.Data.PageSize))">Last</a>
+                </li>
+            }
+        </ul>
+    }
 </div>

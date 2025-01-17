@@ -1,32 +1,23 @@
-﻿ using KooliProjekt.Models;
+﻿using KooliProjekt.Models;
+using KooliProjekt.Search;
+using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace KooliProjekt.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            this.logger = logger;
-        }
-
-        public IActionResult Index()
+        public IActionResult Index(string keyword = null)
         {
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        public IActionResult Error() =>
+            View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

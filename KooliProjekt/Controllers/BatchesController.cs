@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,13 +23,17 @@ namespace KooliProjekt.Controllers
         // GET: Batches
         public async Task<IActionResult> Index(int page = 1, string keyword = null, bool? done = null)
         {
+            // Создаем модель поиска
             var searchModel = new BatchesSearch
             {
                 Keyword = keyword,
                 Done = done
             };
 
+            // Получаем результаты с учетом пагинации и фильтров
             var pagedBatchesEntries = await _batchService.GetPagedBatchesAsync(page, 5, searchModel);
+
+            // Заполняем модель для отображения
             var model = new BatchesIndexModel
             {
                 Search = searchModel,

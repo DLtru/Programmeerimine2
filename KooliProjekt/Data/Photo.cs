@@ -1,10 +1,10 @@
-﻿namespace KooliProjekt.Data
+﻿namespace KooliProjekt.Models
 {
-    public class Photo
+    public class Photos
     {
         public int Id { get; set; }
-        public required string Url { get; set; }
-        public required string Description { get; set; }
-
+        public string Url { get; set; }
+        public string Description { get; set; }
+        public string FilePath { get; set; }
     }
 }

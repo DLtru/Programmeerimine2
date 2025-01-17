@@ -1,4 +1,4 @@
-﻿
+﻿using System.Collections.Generic;
 
 namespace KooliProjekt.Data
 {
@@ -14,11 +14,7 @@ namespace KooliProjekt.Data
         public PagedResult()
         {
             Results = new List<T>();
-        }
-
-        public static implicit operator PagedResult<T>(Services.PagedResult<Batch> v)
-        {
-            throw new NotImplementedException();
+            Items = new List<Batch>();
         }
     }
 }

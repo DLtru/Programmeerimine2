@@ -1,44 +1,7 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
-using KooliProjekt.Services;
-
-public class Programs
-{
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-
-        // Andmebaasi kontekst
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-        // Teenused
-        builder.Services.AddScoped<IPhotoService, PhotoService>();
-
-        var app = builder.Build();
-
-        // Middleware ja lõpp-punktide määramine
-        app.MapControllers();
-
-        app.Run();
-    }
-}
-
-
-namespace KooliProjekt.Services
-{
-    public interface IPhotoService
-    {
-        Task<IEnumerable<Photo>> GetPagedPhotosAsync(int page, int pageSize);
-        Task<Photo> GetPhotoByIdAsync(int id);
-        Task CreatePhotoAsync(Photo photo);
-        Task UpdatePhotoAsync(Photo photo);
-        Task DeletePhotoAsync(int id);
-    }
-}
 
 namespace KooliProjekt.Services
 {
@@ -85,6 +48,31 @@ namespace KooliProjekt.Services
                 _context.Photos.Remove(photo);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<Photo>> GetPhotosBySearchAsync(PhotosSearch search, int page, int pageSize)
+        {
+            var query = _context.Photos.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search.Title))
+            {
+                query = query.Where(p => p.Description.Contains(search.Title)); // Фильтрация по Description
+            }
+
+            if (search.StartDate.HasValue)
+            {
+                query = query.Where(p => p.Date >= search.StartDate.Value);
+            }
+
+            if (search.EndDate.HasValue)
+            {
+                query = query.Where(p => p.Date <= search.EndDate.Value);
+            }
+
+            return await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
     }
 }

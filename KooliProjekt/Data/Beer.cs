@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace KooliProjekt.Models
+namespace KooliProjekt.Data
 {
     public class Beer
     {

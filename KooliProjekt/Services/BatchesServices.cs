@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
@@ -17,58 +16,34 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<PagedResult<Batch>> GetPagedBatchesAsync(int page, int pageSize, BatchesSearch search)
+        public async Task<PagedResult<Batch>> GetPagedBatchesAsync(int pageIndex, int pageSize, BatchesSearch searchModel)
         {
             var query = _context.Batches.AsQueryable();
 
-            // Применяем фильтры (поиск по ключевым словам и статусу "сделано")
-            if (!string.IsNullOrEmpty(search.Keyword))
+            // Фильтрация по ключевому слову
+            if (!string.IsNullOrEmpty(searchModel.Keyword))
             {
-                query = query.Where(b => b.Description.Contains(search.Keyword) || b.Code.Contains(search.Keyword));
-            }
-            if (search.Done.HasValue)
-            {
-                query = query.Where(b => b.Done == search.Done.Value);
+                query = query.Where(b => b.Code.Contains(searchModel.Keyword) || b.Description.Contains(searchModel.Keyword));
             }
 
-            var totalItems = await query.CountAsync();
-            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            // Фильтрация по статусу
+            if (searchModel.Done.HasValue)
+            {
+                query = query.Where(b => b.Done == searchModel.Done);
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query.Skip((pageIndex - 1) * pageSize)
+                                   .Take(pageSize)
+                                   .ToListAsync();
 
             return new PagedResult<Batch>
             {
-                Items = items,
-                TotalItems = totalItems,
-                Page = page,
-                PageSize = pageSize
+                Results = items,
+                TotalCount = totalCount,
+                PageSize = pageSize,
+                PageIndex = pageIndex
             };
-        }
-
-        public async Task<Batch> Get(int id)
-        {
-            return await _context.Batches.FindAsync(id);
-        }
-
-        public async Task Save(Batch batch)
-        {
-            if (batch.Id == 0)
-            {
-                _context.Add(batch);
-            }
-            else
-            {
-                _context.Update(batch);
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task Delete(int id)
-        {
-            var batch = await _context.Batches.FindAsync(id);
-            if (batch != null)
-            {
-                _context.Batches.Remove(batch);
-                await _context.SaveChangesAsync();
-            }
         }
     }
 }

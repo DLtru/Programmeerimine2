@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using KooliProjekt.Services;
-using KooliProjekt.Models;
 using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
@@ -15,9 +14,18 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Beers
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1, string searchName = "", string searchType = "")
         {
-            var pagedBeers = await _beerService.GetPagedBeersAsync(page, 5);
+            var searchModel = new BeerSearch
+            {
+                Name = searchName,
+                Type = searchType
+            };
+
+            var pagedBeers = await _beerService.GetPagedBeersAsync(page, 5, searchModel);
+            ViewData["SearchName"] = searchName;
+            ViewData["SearchType"] = searchType;
+
             return View(pagedBeers);
         }
 

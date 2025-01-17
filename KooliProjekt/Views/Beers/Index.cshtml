@@ -6,9 +6,24 @@
 
 <h1>Index</h1>
 
+<!-- Форма поиска -->
+<form method="get">
+    <div class="form-group">
+        <label for="searchName">Search by Name</label>
+        <input type="text" id="searchName" name="searchName" value="@ViewData["SearchName"]" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="searchType">Search by Type</label>
+        <input type="text" id="searchType" name="searchType" value="@ViewData["SearchType"]" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<!-- Таблица пива -->
 <table class="table">
     <thead>
         <tr>
@@ -22,21 +37,22 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Results) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.Results)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 

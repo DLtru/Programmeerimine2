@@ -1,4 +1,5 @@
-﻿using KooliProjekt.Data;
+﻿using KooliProjekt.Controllers;
+using KooliProjekt.Data;
 using KooliProjekt.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -28,7 +29,6 @@ namespace KooliProjekt.Services
         {
             var query = _context.Beers.AsQueryable();
 
-            // Применение фильтра по имени или типу, если передан searchModel
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Name))
@@ -42,22 +42,7 @@ namespace KooliProjekt.Services
                 }
             }
 
-            // Получаем общее количество записей
-            var totalCount = await query.CountAsync();
-
-            // Применяем пагинацию
-            var beers = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<Beer>
-            {
-                Results = beers,
-                TotalCount = totalCount,
-                PageIndex = page,
-                PageSize = pageSize
-            };
+            return await query.GetPagedAsync(page, pageSize);
         }
 
         public async Task<Beer> GetBeerByIdAsync(int id)
@@ -69,12 +54,8 @@ namespace KooliProjekt.Services
         public async Task AddBeerAsync(Beer beer)
         {
             _context.Beers.Add(beer);
-
             await _context.SaveChangesAsync();
         }
-
-
-
 
         public async Task UpdateBeerAsync(Beer beer)
         {
@@ -85,7 +66,6 @@ namespace KooliProjekt.Services
                 existingBeer.Description = beer.Description;
                 existingBeer.Type = beer.Type;
 
-                // Можно обновлять только те поля, которые были изменены
                 _context.Beers.Update(existingBeer);
                 await _context.SaveChangesAsync();
             }
@@ -100,21 +80,5 @@ namespace KooliProjekt.Services
                 await _context.SaveChangesAsync();
             }
         }
-    }
-
-    // Пагинированный результат
-    public class PagedResult<T>
-    {
-        public List<T> Results { get; set; }
-        public int TotalCount { get; set; }
-        public int PageIndex { get; set; }
-        public int PageSize { get; set; }
-    }
-
-    // Модель поиска для пив
-    public class BeerSearch
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
     }
 }

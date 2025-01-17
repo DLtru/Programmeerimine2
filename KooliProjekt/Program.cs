@@ -1,5 +1,6 @@
 using KooliProjekt.Data;
 using KooliProjekt.Services;
+using KooliProjekt.Search;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,6 @@ namespace KooliProjekt
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
@@ -19,16 +19,15 @@ namespace KooliProjekt
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-            builder.Services.AddControllersWithViews();
 
             builder.Services.AddScoped<IBatchService, BatchService>();
-
             builder.Services.AddScoped<IBeerService, BeerService>();
-
             builder.Services.AddScoped<ITastingEntryService, TastingEntryService>();
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
+
+            builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
-
 
             if (app.Environment.IsDevelopment())
             {
@@ -37,13 +36,11 @@ namespace KooliProjekt
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseAuthentication();
@@ -55,9 +52,9 @@ namespace KooliProjekt
             app.MapRazorPages();
 
             using (var scope = app.Services.CreateScope())
-            using (var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>()) 
-            using(var userManager =scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>())
-            { 
+            using (var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>())
+            using (var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>())
+            {
                 context.Database.EnsureCreated();
                 SeedData.Generate(context, userManager);
             }
