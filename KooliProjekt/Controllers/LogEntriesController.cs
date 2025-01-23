@@ -6,23 +6,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
+using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class LogEntriesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly LogEntryService _logEntryService;
 
-        public LogEntriesController(ApplicationDbContext context)
+        public LogEntriesController(LogEntryService logEntryService)
         {
-            _context = context;
+            _logEntryService = logEntryService;
         }
 
         // GET: LogEntries
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(LogEntriesSearch search, int page = 1, int pageSize = 5)
         {
-            var pagedLogEntries = await _context.LogEntries.GetPagedAsync(page, 5);
-            return View(pagedLogEntries);
+            var logEntries = await _logEntryService.GetPagedLogEntriesAsync(search, page, pageSize);
+
+            var model = new LogEntriesIndexModel
+            {
+                Search = search,
+                Data = logEntries
+            };
+
+            return View(model);
         }
 
         // GET: LogEntries/Details/5
@@ -33,9 +43,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var logEntry = await _context.LogEntries
-                .Include(l => l.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var logEntry = await _logEntryService.GetLogEntryByIdAsync(id.Value);
             if (logEntry == null)
             {
                 return NotFound();
@@ -47,24 +55,21 @@ namespace KooliProjekt.Controllers
         // GET: LogEntries/Create
         public IActionResult Create()
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["UserId"] = new SelectList(_logEntryService.GetAllUsers(), "Id", "Name");
             return View();
         }
 
         // POST: LogEntries/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Date,Desctipyion,UserId")] LogEntry logEntry)
+        public async Task<IActionResult> Create([Bind("Id,Date,Description,UserId")] LogEntry logEntry)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(logEntry);
-                await _context.SaveChangesAsync();
+                await _logEntryService.CreateLogEntryAsync(logEntry);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", logEntry.UserId);
+            ViewData["UserId"] = new SelectList(_logEntryService.GetAllUsers(), "Id", "Name", logEntry.UserId);
             return View(logEntry);
         }
 
@@ -76,21 +81,20 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var logEntry = await _context.LogEntries.FindAsync(id);
+            var logEntry = await _logEntryService.GetLogEntryByIdAsync(id.Value);
             if (logEntry == null)
             {
                 return NotFound();
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", logEntry.UserId);
+
+            ViewData["UserId"] = new SelectList(_logEntryService.GetAllUsers(), "Id", "Name", logEntry.UserId);
             return View(logEntry);
         }
 
         // POST: LogEntries/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Desctipyion,UserId")] LogEntry logEntry)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Description,UserId")] LogEntry logEntry)
         {
             if (id != logEntry.Id)
             {
@@ -101,12 +105,11 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(logEntry);
-                    await _context.SaveChangesAsync();
+                    await _logEntryService.UpdateLogEntryAsync(logEntry);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!LogEntryExists(logEntry.Id))
+                    if (!await LogEntryExists(logEntry.Id))
                     {
                         return NotFound();
                     }
@@ -117,7 +120,7 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", logEntry.UserId);
+            ViewData["UserId"] = new SelectList(_logEntryService.GetAllUsers(), "Id", "Name", logEntry.UserId);
             return View(logEntry);
         }
 
@@ -129,9 +132,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var logEntry = await _context.LogEntries
-                .Include(l => l.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var logEntry = await _logEntryService.GetLogEntryByIdAsync(id.Value);
             if (logEntry == null)
             {
                 return NotFound();
@@ -145,19 +146,13 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var logEntry = await _context.LogEntries.FindAsync(id);
-            if (logEntry != null)
-            {
-                _context.LogEntries.Remove(logEntry);
-            }
-
-            await _context.SaveChangesAsync();
+            await _logEntryService.DeleteLogEntryAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool LogEntryExists(int id)
+        private async Task<bool> LogEntryExists(int id)
         {
-            return _context.LogEntries.Any(e => e.Id == id);
+            return await _logEntryService.LogEntryExistsAsync(id);
         }
     }
 }

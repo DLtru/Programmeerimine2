@@ -3,6 +3,7 @@ using KooliProjekt.Services;
 using KooliProjekt.Search;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {

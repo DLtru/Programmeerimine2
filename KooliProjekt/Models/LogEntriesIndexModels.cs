@@ -1,6 +1,11 @@
-﻿namespace KooliProjekt.Models
+﻿using KooliProjekt.Data;
+using KooliProjekt.Search;
+
+namespace KooliProjekt.Models
 {
-    public class LogEntriesIndexModels
+    public class LogEntriesIndexModel
     {
+        public LogEntriesSearch Search { get; set; }
+        public PagedResult<LogEntry> Data { get; set; }
     }
 }

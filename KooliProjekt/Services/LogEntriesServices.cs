@@ -1,68 +1,98 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Collections;
 using System.Linq;
-
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
-    public interface ILogEntryService
+    public class LogEntryService : ILogEntryService
     {
-        Task<IEnumerable<LogEntry>> GetPagedLogEntriesAsync(int page, int pageSize);
-        Task<LogEntry> GetLogEntryByIdAsync(int id);
-        Task CreateLogEntryAsync(LogEntry logEntry);
-        Task UpdateLogEntryAsync(LogEntry logEntry);
-        Task DeleteLogEntryAsync(int id);
-    }
+        private readonly ApplicationDbContext _context;
 
-    namespace KooliProjekt.Services
-    {
-        public class LogEntryService : ILogEntryService
+        public LogEntryService(ApplicationDbContext context)
         {
-            private readonly ApplicationDbContext _context;
+            _context = context;
+        }
 
-            public LogEntryService(ApplicationDbContext context)
+        public async Task<PagedResult<LogEntry>> GetLogEntriesBySearchAsync(LogEntriesSearch search, int page, int pageSize)
+        {
+            var query = _context.LogEntries.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search.Keyword))
             {
-                _context = context;
+                query = query.Where(le => le.Description.Contains(search.Keyword));
             }
 
-            public async Task<IEnumerable<LogEntry>> GetPagedLogEntriesAsync(int page, int pageSize)
+            if (search.StartDate.HasValue)
             {
-                return await _context.LogEntries
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                query = query.Where(le => le.Date >= search.StartDate.Value);
             }
 
-            public async Task<LogEntry> GetLogEntryByIdAsync(int id)
+            if (search.EndDate.HasValue)
             {
-                return await _context.LogEntries
-                    .Include(l => l.User)
-                    .FirstOrDefaultAsync(m => m.Id == id);
+                query = query.Where(le => le.Date <= search.EndDate.Value);
             }
 
-            public async Task CreateLogEntryAsync(LogEntry logEntry)
+            var totalItems = await query.CountAsync();
+            var results = await query
+                .OrderByDescending(le => le.Date)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<LogEntry>
             {
-                _context.Add(logEntry);
+                Results = results,
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<LogEntry> GetLogEntryByIdAsync(int id)
+        {
+            return await _context.LogEntries
+                .Include(l => l.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task CreateLogEntryAsync(LogEntry logEntry)
+        {
+            _context.Add(logEntry);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateLogEntryAsync(LogEntry logEntry)
+        {
+            _context.Update(logEntry);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteLogEntryAsync(int id)
+        {
+            var logEntry = await _context.LogEntries.FindAsync(id);
+            if (logEntry != null)
+            {
+                _context.LogEntries.Remove(logEntry);
                 await _context.SaveChangesAsync();
             }
+        }
 
-            public async Task UpdateLogEntryAsync(LogEntry logEntry)
-            {
-                _context.Update(logEntry);
-                await _context.SaveChangesAsync();
-            }
+        internal async Task<PagedResult<LogEntry>> GetPagedLogEntriesAsync(LogEntriesSearch search, int page, int pageSize)
+        {
+            throw new NotImplementedException();
+        }
 
-            public async Task DeleteLogEntryAsync(int id)
-            {
-                var logEntry = await _context.LogEntries.FindAsync(id);
-                if (logEntry != null)
-                {
-                    _context.LogEntries.Remove(logEntry);
-                    await _context.SaveChangesAsync();
-                }
-            }
+        internal IEnumerable GetAllUsers()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal async Task<bool> LogEntryExistsAsync(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Photo>> GetPagedPhotosAsync(int page, int pageSize)
+        public async Task<IEnumerable<Data.Photo>> GetPagedPhotosAsync(int page, int pageSize)
         {
             return await _context.Photos
                 .Skip((page - 1) * pageSize)
@@ -22,19 +22,19 @@ namespace KooliProjekt.Services
                 .ToListAsync();
         }
 
-        public async Task<Photo> GetPhotoByIdAsync(int id)
+        public async Task<Data.Photo> GetPhotoByIdAsync(int id)
         {
             return await _context.Photos
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public async Task CreatePhotoAsync(Photo photo)
+        public async Task CreatePhotoAsync(Data.Photo photo)
         {
             _context.Add(photo);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdatePhotoAsync(Photo photo)
+        public async Task UpdatePhotoAsync(Data.Photo photo)
         {
             _context.Update(photo);
             await _context.SaveChangesAsync();
@@ -50,7 +50,7 @@ namespace KooliProjekt.Services
             }
         }
 
-        public async Task<IEnumerable<Photo>> GetPhotosBySearchAsync(PhotosSearch search, int page, int pageSize)
+        public async Task<PagedResult<Photo>> GetPhotosBySearchAsync(PhotosSearch search, int page, int pageSize)
         {
             var query = _context.Photos.AsQueryable();
 
@@ -69,10 +69,8 @@ namespace KooliProjekt.Services
                 query = query.Where(p => p.Date <= search.EndDate.Value);
             }
 
-            return await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            return await query.GetPagedAsync(page, pageSize);
         }
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using KooliProjekt.Models;
+﻿using KooliProjekt.Data;
+using KooliProjekt.Models;
 using KooliProjekt.Search;
 
 namespace KooliProjekt.Services
@@ -10,6 +11,6 @@ namespace KooliProjekt.Services
         Task CreatePhotoAsync(Photo photo);
         Task UpdatePhotoAsync(Photo photo);
         Task DeletePhotoAsync(int id);
-        Task<IEnumerable<Photo>> GetPhotosBySearchAsync(PhotosSearch search, int page, int pageSize);
+        Task<PagedResult<Photo>> GetPhotosBySearchAsync(PhotosSearch search, int page, int pageSize);
     }
 }

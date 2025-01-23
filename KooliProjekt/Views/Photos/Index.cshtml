@@ -1,4 +1,4 @@
-﻿@model IEnumerable<KooliProjekt.Models.Photo>
+﻿@model PagedResult<KooliProjekt.Data.Photo>
 @using KooliProjekt.Search
 
 @{
@@ -37,11 +37,11 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var photo in Model)
+        @foreach (var photo in Model.Results)
         {
             <tr>
                 <td>
-                    <img src="@photo.FilePath" alt="Photo" style="max-width: 100px;" />
+                    <img src="@photo.Url" alt="Photo" style="max-width: 100px;" />
                 </td>
                 <td>@photo.Description</td>
                 <td>
@@ -57,4 +57,4 @@
 </table>
 
 <!-- Пагинация -->
-@(await Component.InvokeAsync<PagerViewComponent>(new { currentPage = 1, totalPages = 5 }))
+@(await Component.InvokeAsync<PagerViewComponent>(Model))

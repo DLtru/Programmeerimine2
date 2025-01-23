@@ -1,49 +1,54 @@
-﻿@model PagedResult<KooliProjekt.Data.LogEntry>
+﻿@model KooliProjekt.Models.LogEntriesIndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Log Entries";
 }
 
-<h1>Index</h1>
+<h1>Log Entries</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<form method="get">
+    <div>
+        <label>Keyword:</label>
+        <input type="text" name="Search.Keyword" value="@Model.Search.Keyword" />
+    </div>
+    <div>
+        <label>Start Date:</label>
+        <input type="date" name="Search.StartDate" value="@Model.Search.StartDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div>
+        <label>End Date:</label>
+        <input type="date" name="Search.EndDate" value="@Model.Search.EndDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <button type="submit">Search</button>
+</form>
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                Date
-            </th>
-            <th>
-                Desctipyion
-            </th>
-            <th>
-                User
-            </th>
-            <th></th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>User</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Results) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Date)
-            </td>
-            <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.Data.Results)
+        {
+            <tr>
+                <td>@item.Date.ToString("yyyy-MM-dd")</td>
+                <td>@item.Description</td>
+                <td>@item.User?.UserName</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
-@(await Component.InvokeAsync<PagerViewComponent>(Model))
+@(await Component.InvokeAsync<PagerViewComponent>(Model.Data))
+
+// Program.cs
+builder.Services.AddScoped<ILogEntryService, LogEntryService>();

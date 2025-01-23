@@ -1,7 +1,7 @@
 ﻿
 namespace KooliProjekt.Models
 {
-    public class Photo
+    public class PhotosIndexModel
     {
         public int Id { get; set; }
         public string Url { get; set; }
