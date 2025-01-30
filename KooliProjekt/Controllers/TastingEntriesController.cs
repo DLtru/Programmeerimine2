@@ -1,28 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using KooliProjekt.Search;
+using KooliProjekt.Models;
+using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class TastingEntriesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ITastingEntryService _tastingEntryService;
 
-        public TastingEntriesController(ApplicationDbContext context)
+        public TastingEntriesController(ITastingEntryService tastingEntryService)
         {
-            _context = context;
+            _tastingEntryService = tastingEntryService;
         }
 
         // GET: TastingEntries
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(TastingEntriesSearch search, int page = 1)
         {
-            var pagedTastingEntries = await _context.TastingEntries.GetPagedAsync (page, 5);
-            return View(pagedTastingEntries);
+            var model = await _tastingEntryService.GetTastingEntries(search, page, 5);
+            return View(model);
         }
 
         // GET: TastingEntries/Details/5
@@ -33,10 +35,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var tastingEntry = await _context.TastingEntries
-                .Include(t => t.Batch)
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var tastingEntry = await _tastingEntryService.GetTastingEntryByIdAsync(id.Value);
             if (tastingEntry == null)
             {
                 return NotFound();
@@ -48,26 +47,23 @@ namespace KooliProjekt.Controllers
         // GET: TastingEntries/Create
         public IActionResult Create()
         {
-            ViewData["BatchId"] = new SelectList(_context.Batches, "Id", "Id");
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["BatchId"] = new SelectList(_tastingEntryService.GetBatches(), "Id", "Id");
+            ViewData["UserId"] = new SelectList(_tastingEntryService.GetUsers(), "Id", "Id");
             return View();
         }
 
         // POST: TastingEntries/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Date,Rating,Comments,BatchId,UserId")] TastingEntry tastingEntry)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(tastingEntry);
-                await _context.SaveChangesAsync();
+                await _tastingEntryService.AddTastingEntryAsync(tastingEntry);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BatchId"] = new SelectList(_context.Batches, "Id", "Id", tastingEntry.BatchId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", tastingEntry.UserId);
+            ViewData["BatchId"] = new SelectList(_tastingEntryService.GetBatches(), "Id", "Id", tastingEntry.BatchId);
+            ViewData["UserId"] = new SelectList(_tastingEntryService.GetUsers(), "Id", "Id", tastingEntry.UserId);
             return View(tastingEntry);
         }
 
@@ -79,19 +75,17 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var tastingEntry = await _context.TastingEntries.FindAsync(id);
+            var tastingEntry = await _tastingEntryService.GetTastingEntryByIdAsync(id.Value);
             if (tastingEntry == null)
             {
                 return NotFound();
             }
-            ViewData["BatchId"] = new SelectList(_context.Batches, "Id", "Id", tastingEntry.BatchId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", tastingEntry.UserId);
+            ViewData["BatchId"] = new SelectList(_tastingEntryService.GetBatches(), "Id", "Id", tastingEntry.BatchId);
+            ViewData["UserId"] = new SelectList(_tastingEntryService.GetUsers(), "Id", "Id", tastingEntry.UserId);
             return View(tastingEntry);
         }
 
         // POST: TastingEntries/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Rating,Comments,BatchId,UserId")] TastingEntry tastingEntry)
@@ -103,26 +97,11 @@ namespace KooliProjekt.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(tastingEntry);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TastingEntryExists(tastingEntry.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _tastingEntryService.UpdateTastingEntryAsync(tastingEntry);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BatchId"] = new SelectList(_context.Batches, "Id", "Id", tastingEntry.BatchId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", tastingEntry.UserId);
+            ViewData["BatchId"] = new SelectList(_tastingEntryService.GetBatches(), "Id", "Id", tastingEntry.BatchId);
+            ViewData["UserId"] = new SelectList(_tastingEntryService.GetUsers(), "Id", "Id", tastingEntry.UserId);
             return View(tastingEntry);
         }
 
@@ -134,10 +113,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var tastingEntry = await _context.TastingEntries
-                .Include(t => t.Batch)
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var tastingEntry = await _tastingEntryService.GetTastingEntryByIdAsync(id.Value);
             if (tastingEntry == null)
             {
                 return NotFound();
@@ -151,19 +127,8 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tastingEntry = await _context.TastingEntries.FindAsync(id);
-            if (tastingEntry != null)
-            {
-                _context.TastingEntries.Remove(tastingEntry);
-            }
-
-            await _context.SaveChangesAsync();
+            await _tastingEntryService.DeleteTastingEntryAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TastingEntryExists(int id)
-        {
-            return _context.TastingEntries.Any(e => e.Id == id);
         }
     }
 }

@@ -1,59 +1,72 @@
-﻿@model IEnumerable<KooliProjekt.Data.TastingEntry>
+﻿@model KooliProjekt.Models.TastingEntriesIndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tasting Entries";
 }
 
-<h1>Index</h1>
+<h1>Tasting Entries</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<form method="get">
+    <div class="form-group">
+        <label for="Keyword">Keyword</label>
+        <input type="text" name="Keyword" value="@Model.Search.Keyword" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="MinRating">Min Rating</label>
+        <input type="number" name="MinRating" value="@Model.Search.MinRating" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="MaxRating">Max Rating</label>
+        <input type="number" name="MaxRating" value="@Model.Search.MaxRating" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="StartDate">Start Date</label>
+        <input type="date" name="StartDate" value="@Model.Search.StartDate?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="EndDate">End Date</label>
+        <input type="date" name="EndDate" value="@Model.Search.EndDate?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Date)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Rating)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Comments)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Batch)
-            </th>
-            <th></th>
+            <th>Date</th>
+            <th>Rating</th>
+            <th>Comments</th>
+            <th>User</th>
+            <th>Batch</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Date)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Rating)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Comments)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Batch.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.Data.Results)
+        {
+            <tr>
+                <td>@item.Date</td>
+                <td>@item.Rating</td>
+                <td>@item.Comments</td>
+                <td>@item.User.Email</td>
+                <td>@item.Batch.Code</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= Model.Data.PageCount; i++)
+        {
+            <li class="page-item @(i == Model.Data.PageIndex ? "active" : "")">
+                <a class="page-link" asp-route-page="@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>

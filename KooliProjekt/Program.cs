@@ -27,6 +27,8 @@ namespace KooliProjekt
             builder.Services.AddScoped<IBeerService, BeerService>();
             builder.Services.AddScoped<ITastingEntryService, TastingEntryService>();
             builder.Services.AddScoped<IPhotoService, PhotoService>();
+            builder.Services.AddScoped<ILogEntryService, LogEntryService>();
+            builder.Services.AddScoped<ITastingEntryService, TastingEntryService>();
 
             var app = builder.Build();
 

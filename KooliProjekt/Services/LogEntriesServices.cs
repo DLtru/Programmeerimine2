@@ -1,7 +1,6 @@
 ﻿using KooliProjekt.Data;
 using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
-using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -51,48 +50,5 @@ namespace KooliProjekt.Services
             };
         }
 
-        public async Task<LogEntry> GetLogEntryByIdAsync(int id)
-        {
-            return await _context.LogEntries
-                .Include(l => l.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-        }
-
-        public async Task CreateLogEntryAsync(LogEntry logEntry)
-        {
-            _context.Add(logEntry);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateLogEntryAsync(LogEntry logEntry)
-        {
-            _context.Update(logEntry);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteLogEntryAsync(int id)
-        {
-            var logEntry = await _context.LogEntries.FindAsync(id);
-            if (logEntry != null)
-            {
-                _context.LogEntries.Remove(logEntry);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        internal async Task<PagedResult<LogEntry>> GetPagedLogEntriesAsync(LogEntriesSearch search, int page, int pageSize)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal IEnumerable GetAllUsers()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal async Task<bool> LogEntryExistsAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
