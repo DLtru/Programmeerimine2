@@ -16,6 +16,7 @@ namespace KooliProjekt.Data
         public string UserId { get; set; }
         [Required]
         public Batch Batch { get; set; }
+        public string Title { get; set; }
     }
 
 }

@@ -19,7 +19,7 @@ namespace KooliProjekt.Controllers
         // Index page with paginated photos and search
         public async Task<IActionResult> Index(int page = 1, int pageSize = 10, PhotosSearch search = null)
         {
-            var photos = await _photoService.GetPhotosBySearchAsync(search ?? new PhotosSearch(), page, pageSize);
+            var photos = await _photoService.List(page, pageSize, search ?? new PhotosSearch());
             return View(photos);
         }
 

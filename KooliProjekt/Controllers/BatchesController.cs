@@ -14,10 +14,17 @@ namespace KooliProjekt.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IBatchService _batchService;
 
+        public IBatchService Object { get; }
+
         public BatchesController(ApplicationDbContext context, IBatchService batchService)
         {
             _context = context;
             _batchService = batchService;
+        }
+
+        public BatchesController(IBatchService @object)
+        {
+            Object = @object;
         }
 
         // GET: Batches
@@ -31,7 +38,7 @@ namespace KooliProjekt.Controllers
             };
 
             // Получаем результаты с учетом пагинации и фильтров
-            var pagedBatchesEntries = await _batchService.GetPagedBatchesAsync(page, 5, searchModel);
+            var pagedBatchesEntries = await _batchService.List(page, 5, searchModel);
 
             // Заполняем модель для отображения
             var model = new BatchesIndexModel

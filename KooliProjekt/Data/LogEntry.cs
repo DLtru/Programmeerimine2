@@ -20,5 +20,6 @@ namespace KooliProjekt.Data
         [Required]
         public Batch Batch { get; set; }
         public string Description { get; internal set; }
+        public string Title { get; set; }
     }
 }

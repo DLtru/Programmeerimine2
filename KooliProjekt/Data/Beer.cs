@@ -13,5 +13,6 @@ namespace KooliProjekt.Data
 
         [Required]
         public string Type { get; set; }
+        public string Title { get; set; }
     }
 }

@@ -24,7 +24,7 @@ namespace KooliProjekt.Controllers
         // GET: LogEntries
         public async Task<IActionResult> Index(LogEntriesSearch search, int page = 1, int pageSize = 5)
         {
-            var logEntries = await _logEntryService.GetLogEntriesBySearchAsync(search, page, pageSize);
+            var logEntries = await _logEntryService.List(page, pageSize, search);
 
             var model = new LogEntriesIndexModel
             {
@@ -35,5 +35,9 @@ namespace KooliProjekt.Controllers
             return View(model);
         }
 
+        public async Task<ViewResult> Index(int page)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -23,7 +23,7 @@ namespace KooliProjekt.Controllers
         // GET: TastingEntries
         public async Task<IActionResult> Index(TastingEntriesSearch search, int page = 1)
         {
-            var model = await _tastingEntryService.GetTastingEntries(search, page, 5);
+            var model = await _tastingEntryService.List(page, 5, search);
             return View(model);
         }
 
@@ -129,6 +129,11 @@ namespace KooliProjekt.Controllers
         {
             await _tastingEntryService.DeleteTastingEntryAsync(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<ViewResult> Index(int page)
+        {
+            throw new NotImplementedException();
         }
     }
 }

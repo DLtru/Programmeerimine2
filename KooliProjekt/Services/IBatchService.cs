@@ -5,6 +5,6 @@ namespace KooliProjekt.Services
 {
     public interface IBatchService
     {
-        Task<PagedResult<Batch>> GetPagedBatchesAsync(int page, int v, BatchesSearch searchModel);
+        Task<PagedResult<Batch>> List(int page, int v, BatchesSearch searchModel);
     }
 }

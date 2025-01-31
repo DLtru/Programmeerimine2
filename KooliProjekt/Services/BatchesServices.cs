@@ -16,7 +16,7 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<PagedResult<Batch>> GetPagedBatchesAsync(int pageIndex, int pageSize, BatchesSearch searchModel)
+        public async Task<PagedResult<Batch>> List(int pageIndex, int pageSize, BatchesSearch searchModel)
         {
             var query = _context.Batches.AsQueryable();
 

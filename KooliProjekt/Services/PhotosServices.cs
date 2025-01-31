@@ -14,14 +14,6 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Data.Photo>> GetPagedPhotosAsync(int page, int pageSize)
-        {
-            return await _context.Photos
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
-
         public async Task<Data.Photo> GetPhotoByIdAsync(int id)
         {
             return await _context.Photos
@@ -50,7 +42,7 @@ namespace KooliProjekt.Services
             }
         }
 
-        public async Task<PagedResult<Photo>> GetPhotosBySearchAsync(PhotosSearch search, int page, int pageSize)
+        public async Task<PagedResult<Photo>> List(int page, int pageSize, PhotosSearch search)
         {
             var query = _context.Photos.AsQueryable();
 

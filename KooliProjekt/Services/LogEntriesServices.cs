@@ -15,7 +15,7 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<PagedResult<LogEntry>> GetLogEntriesBySearchAsync(LogEntriesSearch search, int page, int pageSize)
+        public async Task<PagedResult<LogEntry>> List( int page, int pageSize, LogEntriesSearch search)
         {
             var query = _context.LogEntries.AsQueryable();
 

@@ -1,21 +1,13 @@
 ﻿using KooliProjekt.Controllers;
 using KooliProjekt.Data;
 using KooliProjekt.Models;
+using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
-    public interface IBeerService
-    {
-        Task<PagedResult<Beer>> GetPagedBeersAsync(int page, int pageSize, BeerSearch searchModel = null);
-        Task<Beer> GetBeerByIdAsync(int id);
-        Task AddBeerAsync(Beer beer);
-        Task UpdateBeerAsync(Beer beer);
-        Task DeleteBeerAsync(int id);
-    }
-
     public class BeerService : IBeerService
     {
         private readonly ApplicationDbContext _context;
@@ -25,7 +17,7 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<PagedResult<Beer>> GetPagedBeersAsync(int page, int pageSize, BeerSearch searchModel = null)
+        public async Task<PagedResult<Beer>> List(int page, int pageSize, BeerSearch searchModel = null)
         {
             var query = _context.Beers.AsQueryable();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using KooliProjekt.Services;
 using KooliProjekt.Data;
+using KooliProjekt.Search;
 
 namespace KooliProjekt.Controllers
 {
@@ -22,7 +23,7 @@ namespace KooliProjekt.Controllers
                 Type = searchType
             };
 
-            var pagedBeers = await _beerService.GetPagedBeersAsync(page, 5, searchModel);
+            var pagedBeers = await _beerService.List(page, 5, searchModel);
             ViewData["SearchName"] = searchName;
             ViewData["SearchType"] = searchType;
 

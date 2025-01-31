@@ -19,5 +19,7 @@ namespace KooliProjekt.Data
         [Required]
         public ICollection<TastingEntry> TastingEntry { get; set; }
         public bool Done { get; set; }
+        public string Titles { get; set; }
+        public string Title { get; set; }
     }
 }

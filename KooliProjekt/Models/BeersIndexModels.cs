@@ -1,5 +1,5 @@
-﻿using KooliProjekt.Controllers;
-using KooliProjekt.Data;
+﻿using KooliProjekt.Data;
+using KooliProjekt.Search;
 
 namespace KooliProjekt.Models
 {

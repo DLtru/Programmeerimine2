@@ -5,6 +5,6 @@ namespace KooliProjekt.Services
 {
     public interface ILogEntryService
     {
-        Task<PagedResult<LogEntry>> GetLogEntriesBySearchAsync(LogEntriesSearch search, int page, int pageSize);
+        Task<PagedResult<LogEntry>> List(int page, int v, LogEntriesSearch searchModel);
     }
 }

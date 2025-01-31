@@ -9,17 +9,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
 {
-    public interface ITastingEntryService
-    {
-        Task<TastingEntriesIndexModel> GetTastingEntries(TastingEntriesSearch search, int page, int pageSize);
-        Task<TastingEntry> GetTastingEntryByIdAsync(int id);
-        Task AddTastingEntryAsync(TastingEntry tastingEntry);
-        Task UpdateTastingEntryAsync(TastingEntry tastingEntry);
-        Task DeleteTastingEntryAsync(int id);
-        IEnumerable<Batch> GetBatches();
-        IEnumerable<User> GetUsers();
-    }
-
     public class TastingEntryService : ITastingEntryService
     {
         private readonly ApplicationDbContext _context;
@@ -29,7 +18,7 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<TastingEntriesIndexModel> GetTastingEntries(TastingEntriesSearch search, int page, int pageSize)
+        public async Task<TastingEntriesIndexModel> List(int page, int pageSize, TastingEntriesSearch search)
         {
             var query = _context.TastingEntries
                 .Include(t => t.Batch)
