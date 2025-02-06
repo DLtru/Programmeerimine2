@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using KooliProjekt.Controllers;
 using KooliProjekt.Data;
+using KooliProjekt.Models;
 using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -14,13 +13,13 @@ namespace KooliProjekt.UnitTests.ControllerTests
 {
     public class LogEntriesControllerTests
     {
-        private readonly Mock<ILogEntryService> _LogEntryServiceMock;
+        private readonly Mock<ILogEntryService> _logEntryServiceMock;
         private readonly LogEntriesController _controller;
 
         public LogEntriesControllerTests()
         {
-            _LogEntryServiceMock = new Mock<ILogEntryService>();
-            _controller = new LogEntriesController(_LogEntryServiceMock.Object);
+            _logEntryServiceMock = new Mock<ILogEntryService>();
+            _controller = new LogEntriesController(_logEntryServiceMock.Object);
         }
 
         [Fact]
@@ -34,14 +33,16 @@ namespace KooliProjekt.UnitTests.ControllerTests
                 new LogEntry { Id = 2, Title = "Test 2" }
             };
             var pagedResult = new PagedResult<LogEntry> { Results = data };
-            _LogEntryServiceMock.Setup(x => x.List(page, It.IsAny<int>(), null)).ReturnsAsync(pagedResult);
+            _logEntryServiceMock.Setup(x => x.List(page, It.IsAny<int>(), null)).ReturnsAsync(pagedResult);
 
             // Act
-            var result = await _controller.Index(page) as ViewResult;
+            var result = await _controller.Index(null, page) as ViewResult;
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(pagedResult, result.Model);
+            Assert.IsType<LogEntriesIndexModel>(result.Model);
+            var model = result.Model as LogEntriesIndexModel;
+            Assert.Equal(pagedResult, model?.Data);
         }
     }
 }

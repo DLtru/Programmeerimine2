@@ -2,6 +2,8 @@
 using KooliProjekt.Services;
 using KooliProjekt.Data;
 using KooliProjekt.Search;
+using System;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Controllers
 {
@@ -11,7 +13,7 @@ namespace KooliProjekt.Controllers
 
         public BeersController(IBeerService beerService)
         {
-            _beerService = beerService;
+            _beerService = beerService ?? throw new ArgumentNullException(nameof(beerService));
         }
 
         // GET: Beers
@@ -23,10 +25,24 @@ namespace KooliProjekt.Controllers
                 Type = searchType
             };
 
+            // Получаем список пива с учетом пагинации и поиска
             var pagedBeers = await _beerService.List(page, 5, searchModel);
+
+            // Логирование для отладки
+            Console.WriteLine($"Index method called. Search: Name={searchName}, Type={searchType}, Page={page}");
+            Console.WriteLine($"Retrieved {pagedBeers?.Results?.Count ?? 0} beers");
+
+            // Если результат пуст, показываем ошибку
+            if (pagedBeers == null)
+            {
+                return View("Error");
+            }
+
+            // Заполнение ViewData для поиска
             ViewData["SearchName"] = searchName;
             ViewData["SearchType"] = searchType;
 
+            // Возвращаем представление с результатами
             return View(pagedBeers);
         }
 
@@ -61,6 +77,7 @@ namespace KooliProjekt.Controllers
             if (ModelState.IsValid)
             {
                 await _beerService.AddBeerAsync(beer);
+                Console.WriteLine($"Beer created: {beer.Name}");
                 return RedirectToAction(nameof(Index));
             }
             return View(beer);
@@ -95,6 +112,7 @@ namespace KooliProjekt.Controllers
             if (ModelState.IsValid)
             {
                 await _beerService.UpdateBeerAsync(beer);
+                Console.WriteLine($"Beer updated: {beer.Name}");
                 return RedirectToAction(nameof(Index));
             }
             return View(beer);
@@ -123,6 +141,7 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _beerService.DeleteBeerAsync(id);
+            Console.WriteLine($"Beer deleted: ID={id}");
             return RedirectToAction(nameof(Index));
         }
     }

@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Data;
 using KooliProjekt.Models;
-using KooliProjekt.Search;
 using KooliProjekt.Services;
+using KooliProjekt.Search;
 
 namespace KooliProjekt.Controllers
 {
@@ -33,11 +30,6 @@ namespace KooliProjekt.Controllers
             };
 
             return View(model);
-        }
-
-        public async Task<ViewResult> Index(int page)
-        {
-            throw new NotImplementedException();
         }
     }
 }

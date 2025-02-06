@@ -16,6 +16,26 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
+        public Task AddBatchAsync(Batch batch)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool BatchExists(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteBatchAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetBatchByIdAsync(int value)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<PagedResult<Batch>> List(int pageIndex, int pageSize, BatchesSearch searchModel)
         {
             var query = _context.Batches.AsQueryable();
@@ -44,6 +64,11 @@ namespace KooliProjekt.Services
                 PageSize = pageSize,
                 PageIndex = pageIndex
             };
+        }
+
+        public Task UpdateBatchAsync(Batch batch)
+        {
+            throw new NotImplementedException();
         }
     }
 }

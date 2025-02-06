@@ -3,11 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Data;
-using KooliProjekt.Search;
 using KooliProjekt.Models;
 using KooliProjekt.Services;
+using KooliProjekt.Data;
+using KooliProjekt.Search;
 
 namespace KooliProjekt.Controllers
 {
@@ -129,11 +128,6 @@ namespace KooliProjekt.Controllers
         {
             await _tastingEntryService.DeleteTastingEntryAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<ViewResult> Index(int page)
-        {
-            throw new NotImplementedException();
         }
     }
 }

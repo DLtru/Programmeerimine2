@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using KooliProjekt.Controllers;
+﻿using KooliProjekt.Controllers;
 using KooliProjekt.Data;
+using KooliProjekt.Models;
+using KooliProjekt.Search;
 using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -16,6 +13,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
     {
         private readonly Mock<IBatchService> _BatchesServiceMock;
         private readonly BatchesController _controller;
+        private readonly int TotalCount;
 
         public BatchesControllerTests()
         {
@@ -23,25 +21,54 @@ namespace KooliProjekt.UnitTests.ControllerTests
             _controller = new BatchesController(_BatchesServiceMock.Object);
         }
 
+        public int GetTotalCount()
+        {
+            return TotalCount;
+        }
+
         [Fact]
-        public async Task Index_should_return_correct_view_with_data()
+        public async Task IndexShouldReturnCorrectViewWithData()
         {
             // Arrange
             int page = 1;
             var data = new List<Batch>
             {
-                new Batch { Id = 1, Title = "Test 1" },
-                new Batch { Id = 2, Title = "Test 2" }
+                new Batch { Id = 1, Date = DateTime.Now, Code = "Code1", Description = "Test 1" },
+                new Batch { Id = 2, Date = DateTime.Now, Code = "Code2", Description = "Test 2" }
             };
-            var pagedResult = new PagedResult<Batch> { Results = data };
-            _BatchesServiceMock.Setup(x => x.List(page, It.IsAny<int>(), null)).ReturnsAsync(pagedResult);
+
+            var pagedResult = new PagedResult<Batch>
+            {
+                Results = data,
+                totalCount = data.Count, // Добавляем total count, если это требуется для пагинации
+                PageNumber = page,
+                PageSize = 5
+            };
+
+            var searchModel = new BatchesSearch
+            {
+                Keyword = null, // Или добавь свои данные для поиска
+                Done = null
+            };
+
+            // Мокаем метод List в сервисе
+            _BatchesServiceMock.Setup(x => x.List(page, 5, It.IsAny<BatchesSearch>()))
+                               .ReturnsAsync(pagedResult);
 
             // Act
             var result = await _controller.Index(page) as ViewResult;
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(pagedResult, result.Model);
+            Assert.NotNull(result); // Проверяем, что результат не null
+            var model = result.Model as BatchesIndexModel;
+            Assert.NotNull(model); // Проверяем, что модель возвращена корректно
+
+            // Проверяем правильность данных в модели
+            Assert.Equal(pagedResult, model.Data); // Проверяем, что данные в модели совпадают с ожиданием
+
+            // Сравниваем свойства вручную
+            Assert.Equal(searchModel.Keyword, model.Search.Keyword);
+            Assert.Equal(searchModel.Done, model.Search.Done);
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using KooliProjekt.Controllers;
 using KooliProjekt.Data;
@@ -15,13 +13,13 @@ namespace KooliProjekt.UnitTests.ControllerTests
 {
     public class TastingEntriesControllerTests
     {
-        private readonly Mock<ITastingEntryService> _TastingEntryServiceMock;
+        private readonly Mock<ITastingEntryService> _tastingEntryServiceMock;
         private readonly TastingEntriesController _controller;
 
         public TastingEntriesControllerTests()
         {
-            _TastingEntryServiceMock = new Mock<ITastingEntryService>();
-            _controller = new TastingEntriesController(_TastingEntryServiceMock.Object);
+            _tastingEntryServiceMock = new Mock<ITastingEntryService>();
+            _controller = new TastingEntriesController(_tastingEntryServiceMock.Object);
         }
 
         [Fact]
@@ -36,14 +34,15 @@ namespace KooliProjekt.UnitTests.ControllerTests
             };
             var pagedResult = new PagedResult<TastingEntry> { Results = data };
             var model = new TastingEntriesIndexModel { Data = pagedResult };
-            _TastingEntryServiceMock.Setup(x => x.List(page, It.IsAny<int>(), null)).ReturnsAsync(model);
+            _tastingEntryServiceMock.Setup(x => x.List(page, It.IsAny<int>(), null)).ReturnsAsync(model);
 
             // Act
-            var result = await _controller.Index(page) as ViewResult;
+            var result = await _controller.Index(null, page) as ViewResult;
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(pagedResult, result.Model);
+            Assert.NotNull(result); // проверка, что результат не null
+            var viewModel = Assert.IsType<TastingEntriesIndexModel>(result.Model); // проверка, что модель соответствует ожидаемой
+            Assert.Equal(data.Count, viewModel.Data.Results.Count); // проверка, что количество элементов соответствует ожидаемому
         }
     }
 }

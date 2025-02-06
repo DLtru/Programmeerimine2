@@ -1,36 +1,25 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Data;
 using KooliProjekt.Models;
 using KooliProjekt.Services;
 using KooliProjekt.Search;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.Controllers
 {
     public class BatchesController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IBatchService _batchService;
 
-        public IBatchService Object { get; }
-
-        public BatchesController(ApplicationDbContext context, IBatchService batchService)
+        public BatchesController(IBatchService batchService)
         {
-            _context = context;
-            _batchService = batchService;
-        }
-
-        public BatchesController(IBatchService @object)
-        {
-            Object = @object;
+            _batchService = batchService ?? throw new ArgumentNullException(nameof(batchService));
         }
 
         // GET: Batches
         public async Task<IActionResult> Index(int page = 1, string keyword = null, bool? done = null)
         {
-            // Создаем модель поиска
+            // Создаем модель поиска с фильтрами
             var searchModel = new BatchesSearch
             {
                 Keyword = keyword,
@@ -40,13 +29,14 @@ namespace KooliProjekt.Controllers
             // Получаем результаты с учетом пагинации и фильтров
             var pagedBatchesEntries = await _batchService.List(page, 5, searchModel);
 
-            // Заполняем модель для отображения
+            // Создаем модель для отображения с данными и поисковыми параметрами
             var model = new BatchesIndexModel
             {
                 Search = searchModel,
                 Data = pagedBatchesEntries
             };
 
+            // Возвращаем представление с моделью
             return View(model);
         }
 
@@ -58,8 +48,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var batch = await _context.Batches
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var batch = await _batchService.GetBatchByIdAsync(id.Value);
             if (batch == null)
             {
                 return NotFound();
@@ -81,8 +70,7 @@ namespace KooliProjekt.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(batch);
-                await _context.SaveChangesAsync();
+                await _batchService.AddBatchAsync(batch);
                 return RedirectToAction(nameof(Index));
             }
             return View(batch);
@@ -96,7 +84,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var batch = await _context.Batches.FindAsync(id);
+            var batch = await _batchService.GetBatchByIdAsync(id.Value);
             if (batch == null)
             {
                 return NotFound();
@@ -118,10 +106,9 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(batch);
-                    await _context.SaveChangesAsync();
+                    await _batchService.UpdateBatchAsync(batch);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception)
                 {
                     if (!BatchExists(batch.Id))
                     {
@@ -145,8 +132,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var batch = await _context.Batches
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var batch = await _batchService.GetBatchByIdAsync(id.Value);
             if (batch == null)
             {
                 return NotFound();
@@ -160,19 +146,13 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var batch = await _context.Batches.FindAsync(id);
-            if (batch != null)
-            {
-                _context.Batches.Remove(batch);
-            }
-
-            await _context.SaveChangesAsync();
+            await _batchService.DeleteBatchAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool BatchExists(int id)
         {
-            return _context.Batches.Any(e => e.Id == id);
+            return _batchService.BatchExists(id);
         }
     }
 }
