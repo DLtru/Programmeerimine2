@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
 using KooliProjekt.Models;
@@ -16,59 +18,74 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public Task AddBatchAsync(Batch batch)
+        public async Task<PagedResult<Batch>> List(int page, int pageSize, BatchesSearch search)
         {
-            throw new NotImplementedException();
+            var query = _context.Batches.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search.Keyword))
+            {
+                query = query.Where(b => b.Code.Contains(search.Keyword) || b.Description.Contains(search.Keyword));
+            }
+
+            if (search.Done.HasValue)
+            {
+                query = query.Where(b => b.Done == search.Done.Value);
+            }
+
+            return await query.GetPagedAsync(page, pageSize);
+        }
+
+        public async Task<Batch> GetById(int id)
+        {
+            return await _context.Batches.FindAsync(id);
+        }
+
+        public async Task<string> GetBatchByIdAsync(int value)
+        {
+            var batch = await _context.Batches.FindAsync(value);
+            return batch != null ? batch.Code : null; // Возвращаем только код, если найден
+        }
+
+        public async Task Add(Batch batch)
+        {
+            await _context.Batches.AddAsync(batch);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddBatchAsync(Batch batch)
+        {
+            await Add(batch);
+        }
+
+        public async Task Update(Batch batch)
+        {
+            _context.Batches.Update(batch);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateBatchAsync(Batch batch)
+        {
+            await Update(batch);
+        }
+
+        public async Task Delete(int id)
+        {
+            var batch = await _context.Batches.FindAsync(id);
+            if (batch != null)
+            {
+                _context.Batches.Remove(batch);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteBatchAsync(int id)
+        {
+            await Delete(id);
         }
 
         public bool BatchExists(int id)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteBatchAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string> GetBatchByIdAsync(int value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<PagedResult<Batch>> List(int pageIndex, int pageSize, BatchesSearch searchModel)
-        {
-            var query = _context.Batches.AsQueryable();
-
-            // Фильтрация по ключевому слову
-            if (!string.IsNullOrEmpty(searchModel.Keyword))
-            {
-                query = query.Where(b => b.Code.Contains(searchModel.Keyword) || b.Description.Contains(searchModel.Keyword));
-            }
-
-            // Фильтрация по статусу
-            if (searchModel.Done.HasValue)
-            {
-                query = query.Where(b => b.Done == searchModel.Done);
-            }
-
-            var totalCount = await query.CountAsync();
-            var items = await query.Skip((pageIndex - 1) * pageSize)
-                                   .Take(pageSize)
-                                   .ToListAsync();
-
-            return new PagedResult<Batch>
-            {
-                Results = items,
-                TotalCount = totalCount,
-                PageSize = pageSize,
-                PageIndex = pageIndex
-            };
-        }
-
-        public Task UpdateBatchAsync(Batch batch)
-        {
-            throw new NotImplementedException();
+            return _context.Batches.Any(e => e.Id == id);
         }
     }
 }

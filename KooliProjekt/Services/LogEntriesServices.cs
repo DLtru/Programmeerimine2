@@ -15,7 +15,7 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<PagedResult<LogEntry>> List( int page, int pageSize, LogEntriesSearch search)
+        public async Task<PagedResult<LogEntry>> List(int page, int pageSize, LogEntriesSearch search)
         {
             var query = _context.LogEntries.AsQueryable();
 
@@ -34,21 +34,11 @@ namespace KooliProjekt.Services
                 query = query.Where(le => le.Date <= search.EndDate.Value);
             }
 
-            var totalItems = await query.CountAsync();
+            // Выполняем запрос с пагинацией и сортировкой
             var results = await query
                 .OrderByDescending(le => le.Date)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<LogEntry>
-            {
-                Results = results,
-                TotalItems = totalItems,
-                Page = page,
-                PageSize = pageSize
-            };
+                .GetPagedAsync(page, pageSize);
+            return results;
         }
-
     }
 }
