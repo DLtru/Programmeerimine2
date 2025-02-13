@@ -9,6 +9,17 @@ namespace KooliProjekt.Controllers
 {
     public class HomeController : Controller
     {
+        private ILogger<HomeController> @object;
+
+        public HomeController(ILogger<HomeController> @object)
+        {
+            this.@object = @object;
+        }
+
+        public HomeController()
+        {
+        }
+
         public IActionResult Index(string keyword = null)
         {
             return View();
