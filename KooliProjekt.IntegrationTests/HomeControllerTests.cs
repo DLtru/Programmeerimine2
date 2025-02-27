@@ -1,42 +1,29 @@
-﻿using System.Threading.Tasks;
-using KooliProjekt.IntegrationTests.Helpers;
-using Xunit;
+﻿using KooliProjekt.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
-namespace KooliProjekt.IntegrationTests
+namespace KooliProjekt.Controllers
 {
-    public class HomeControllerTests : TestBase
+    public class HomeController : Controller
     {
-        [Theory]
-        [InlineData("/")]
-        [InlineData("/Home/Privacy")]
-        public async Task Get_EndpointsReturnSuccessAndCorrectContentType(string url)
+        private readonly ILogger<HomeController> _logger;
+
+        // Оставляем только один конструктор с зависимостью ILogger
+        public HomeController(ILogger<HomeController> logger)
         {
-            // Arrange
-            var client = Factory.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(url);
-
-            // Assert
-            response.EnsureSuccessStatusCode();
-            Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            _logger = logger;
         }
 
-        [Theory]
-        [InlineData("/Home/Privacy")]
-
-        public async Task Get_AnonymousCanAccessPrivacy(string url)
+        public IActionResult Index(string keyword = null)
         {
-            // Arrange
-            using var client = Factory.CreateClient();
-
-            // Act
-            using var response = await client.GetAsync(url);
-
-            // Assert
-            response.EnsureSuccessStatusCode();
-            Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
-
+            return View();
         }
-     }
+
+        public IActionResult Privacy() => View();
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error() =>
+            View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
 }

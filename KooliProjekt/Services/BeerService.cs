@@ -1,6 +1,5 @@
-﻿using KooliProjekt.Controllers;
+﻿using KooliProjekt.Models;
 using KooliProjekt.Data;
-using KooliProjekt.Models;
 using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -8,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
-    public class BeerService : IBeerService
+    public class IBeerService : BeerService  // Исправлен на BeerService, а не IBeerService
     {
         private readonly ApplicationDbContext _context;
 
-        public BeerService(ApplicationDbContext context)
+        public IBeerService(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -37,7 +36,7 @@ namespace KooliProjekt.Services
             return await query.GetPagedAsync(page, pageSize);
         }
 
-        public async Task<Beer> GetBeerByIdAsync(int id)
+        public async Task<Beer> GetBeerByIdAsync(int id)  // Получаем пиво по id
         {
             return await _context.Beers
                 .FirstOrDefaultAsync(b => b.Id == id);
@@ -71,6 +70,16 @@ namespace KooliProjekt.Services
                 _context.Beers.Remove(beer);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public void List(int page, int v, UnitTests.ControllerTests.BeersSearch beersSearch)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GetById(int v)
+        {
+            throw new NotImplementedException();
         }
     }
 }

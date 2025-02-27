@@ -24,7 +24,7 @@ namespace KooliProjekt
 
             // Register services for dependency injection
             builder.Services.AddScoped<IBatchService, BatchService>();
-            builder.Services.AddScoped<IBeerService, BeerService>();
+            builder.Services.AddScoped<BeerService, BeerService>();
             builder.Services.AddScoped<ITastingEntryService, TastingEntryService>();
             builder.Services.AddScoped<IPhotoService, PhotoService>();
             builder.Services.AddScoped<ILogEntryService, LogEntryService>();

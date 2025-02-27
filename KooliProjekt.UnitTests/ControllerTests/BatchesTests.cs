@@ -1,63 +1,91 @@
-﻿using KooliProjekt.Controllers;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using KooliProjekt.Controllers;
 using KooliProjekt.Models;
+using KooliProjekt.Services;
+using KooliProjekt.Search;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.UnitTests.ControllerTests
 {
-    public class HomeControllerTests
+    public class BatchesControllerTests
     {
-        private readonly HomeController _controller;
+        private readonly Mock<IBatchService> batchServiceMock;
+        private readonly BatchesController controller;
 
-        public HomeControllerTests()
+        public BatchesControllerTests()
         {
-            var loggerMock = new Mock<ILogger<HomeController>>();
-            _controller = new HomeController(loggerMock.Object);
+            batchServiceMock = new Mock<IBatchService>();
+            controller = new BatchesController(batchServiceMock.Object);
+        }
 
-            var httpContextMock = new Mock<HttpContext>();
-            httpContextMock.Setup(x => x.TraceIdentifier).Returns("TestTraceId");
-            _controller.ControllerContext = new ControllerContext
+        [Fact]
+        public async Task Index_Should_Return_Correct_View_With_Data()
+        {
+            // Arrange
+            int page = 1;
+            var data = new List<Batch>
             {
-                HttpContext = httpContextMock.Object
+                new Batch { Id = 1, Code = "B001", Description = "First Batch" },
+                new Batch { Id = 2, Code = "B002", Description = "Second Batch" }
             };
-        }
+            var pagedResult = new PagedResult<Batch>
+            {
+                Results = data,
+                CurrentPage = 1,
+                PageCount = 1,
+                PageIndex = 1,
+                PageNumber = 1
+            };
+            batchServiceMock.Setup(x => x.List(page, It.IsAny<int>(), It.IsAny<BatchesSearch>())).ReturnsAsync(pagedResult);
 
-        [Fact]
-        public void Index_Should_Return_Index_View()
-        {
             // Act
-            var result = _controller.Index() as ViewResult;
+            var result = await controller.Index(page) as ViewResult;
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(result.ViewName == "Index" || string.IsNullOrEmpty(result.ViewName));
+            Assert.NotNull(result.Model);
+            Assert.IsType<BatchesIndexModel>(result.Model);
+            var model = (BatchesIndexModel)result.Model;
+            Assert.NotNull(model.Data);
+            Assert.Equal(pagedResult.Results.Count, model.Data.Results.Count);
+            Assert.Equal(pagedResult.Results[0].Code, model.Data.Results[0].Code);
         }
 
         [Fact]
-        public void Privacy_Should_Return_Correct_View()
+        public async Task Details_Should_Return_NotFound_When_Id_Is_Null()
         {
+            // Arrange
+            int? id = null;
+
             // Act
-            var result = _controller.Privacy() as ViewResult;
+            var result = await controller.Details(id) as NotFoundResult;
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(result.ViewName == "Privacy" || string.IsNullOrEmpty(result.ViewName));
         }
 
         [Fact]
-        public void Error_Should_Return_Correct_View()
+        public async Task Details_Should_Return_Correct_View_With_Model()
         {
+            // Arrange
+            var batch = new Batch { Id = 1, Code = "B001", Description = "First Batch" };
+            batchServiceMock.Setup(x => x.GetById(1)).ReturnsAsync(batch);
+
             // Act
-            var result = _controller.Error() as ViewResult;
+            var result = await controller.Details(1) as ViewResult;
 
             // Assert
             Assert.NotNull(result);
-            var model = result.Model as ErrorViewModel;
-            Assert.NotNull(model);
-            Assert.Equal("TestTraceId", model.RequestId);
+            Assert.NotNull(result.Model);
+            Assert.IsType<Batch>(result.Model);
+            var model = (Batch)result.Model;
+            Assert.Equal(batch.Id, model.Id);
+            Assert.Equal(batch.Code, model.Code);
         }
     }
 }

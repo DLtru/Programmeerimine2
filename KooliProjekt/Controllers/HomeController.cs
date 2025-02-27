@@ -9,11 +9,12 @@ namespace KooliProjekt.Controllers
 {
     public class HomeController : Controller
     {
-        private ILogger<HomeController> @object;
+        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> @object)
+        // Оставляем только один конструктор с зависимостью ILogger
+        public HomeController(ILogger<HomeController> logger)
         {
-            this.@object = @object;
+            _logger = logger;
         }
 
         public HomeController()

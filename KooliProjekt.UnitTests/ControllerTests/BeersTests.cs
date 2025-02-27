@@ -2,57 +2,90 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KooliProjekt.Controllers;
-using KooliProjekt.Data;
+using KooliProjekt.Models;
 using KooliProjekt.Services;
 using KooliProjekt.Search;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
+using KooliProjekt.Data;
 
 namespace KooliProjekt.UnitTests.ControllerTests
 {
     public class BeersControllerTests
     {
-        private readonly Mock<IBeerService> _beerServiceMock;
-        private readonly BeersController _controller;
+        private readonly Mock<BeerService> beerServiceMock;
+        private readonly BeersController controller;
 
         public BeersControllerTests()
         {
-            _beerServiceMock = new Mock<IBeerService>();
-            _controller = new BeersController(_beerServiceMock.Object);
+            beerServiceMock = new Mock<BeerService>();
+            controller = new BeersController(beerServiceMock.Object);
         }
 
         [Fact]
-        public async Task Index_ShouldReturnCorrectViewWithData()
+        public async Task Index_Should_Return_Correct_View_With_Data()
         {
             // Arrange
             int page = 1;
-            var searchName = "Test";
-            var searchType = "IPA";
             var data = new List<Beer>
             {
-                new Beer { Id = 1, Name = "Test Beer 1", Type = "IPA" },
-                new Beer { Id = 2, Name = "Test Beer 2", Type = "IPA" }
+                new Beer { Id = 1, Name = "Beer 1", AlcoholPercentage = 5.0 },
+                new Beer { Id = 2, Name = "Beer 2", AlcoholPercentage = 4.5 }
             };
-
-            var pagedResult = new PagedResult<Beer> { Results = data };
-
-            // Настроим мок-сервис так, чтобы он возвращал данные
-            _beerServiceMock.Setup(x => x.List(page, 5, It.IsAny<BeerSearch>()))
-                            .ReturnsAsync(pagedResult);
+            var pagedResult = new PagedResult<Beer>
+            {
+                Results = data,
+                CurrentPage = 1,
+                PageCount = 1,
+                PageIndex = 1,
+                PageNumber = 1
+            };
+            beerServiceMock.Setup(x => x.List(page, It.IsAny<int>(), It.IsAny<BeerSearch>())).ReturnsAsync(pagedResult);
 
             // Act
-            var result = await _controller.Index(page, searchName, searchType) as ViewResult;
+            var result = await controller.Index(page) as ViewResult;
 
             // Assert
-            Assert.NotNull(result);  // Проверка, что результат не null
-            Assert.NotNull(result.Model);  // Проверка, что модель не null
-            Assert.IsType<PagedResult<Beer>>(result.Model);  // Проверка, что модель правильного типа
-            var model = (PagedResult<Beer>)result.Model;
-            Assert.Equal(pagedResult.Results.Count, model.Results.Count);  // Проверка, что количество данных совпадает
+            Assert.NotNull(result);
+            Assert.NotNull(result.Model);
+            Assert.IsType<BeersIndexModel>(result.Model);
+            var model = (BeersIndexModel)result.Model;
+            Assert.NotNull(model.Data);
+            Assert.Equal(pagedResult.Results.Count, model.Data.Results.Count);
+            Assert.Equal(pagedResult.Results[0].Name, model.Data.Results[0].Name);
+        }
 
-            // Логируем что-то полезное, чтобы увидеть, что передается в тест
-            Console.WriteLine($"Returned model contains {model.Results.Count} beers.");
+        [Fact]
+        public async Task Details_Should_Return_NotFound_When_Id_Is_Null()
+        {
+            // Arrange
+            int? id = null;
+
+            // Act
+            var result = await controller.Details(id) as NotFoundResult;
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Details_Should_Return_Correct_View_With_Model()
+        {
+            // Arrange
+            var beer = new Beer { Id = 1, Name = "Beer 1", AlcoholPercentage = 5.0 };
+            beerServiceMock.Setup(x => x.GetBeerByIdAsync(1)).ReturnsAsync(beer); // Используем правильный метод
+
+            // Act
+            var result = await controller.Details(1) as ViewResult;
+
+            // Assert
+            Assert.NotNull(result); // Убедитесь, что результат не null
+            Assert.NotNull(result.Model); // Убедитесь, что модель не null
+            Assert.IsType<Beer>(result.Model); // Проверяем, что модель типа Beer
+            var model = (Beer)result.Model;
+            Assert.Equal(beer.Id, model.Id); // Проверяем, что Id совпадает
+            Assert.Equal(beer.Name, model.Name); // Проверяем, что Name совпадает
         }
     }
 }
