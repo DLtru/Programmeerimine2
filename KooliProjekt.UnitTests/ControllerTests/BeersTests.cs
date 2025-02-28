@@ -14,12 +14,12 @@ namespace KooliProjekt.UnitTests.ControllerTests
 {
     public class BeersControllerTests
     {
-        private readonly Mock<BeerService> beerServiceMock;
+        private readonly Mock<IBeerService> beerServiceMock;
         private readonly BeersController controller;
 
         public BeersControllerTests()
         {
-            beerServiceMock = new Mock<BeerService>();
+            beerServiceMock = new Mock<IBeerService>();
             controller = new BeersController(beerServiceMock.Object);
         }
 

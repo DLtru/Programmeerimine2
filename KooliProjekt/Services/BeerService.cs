@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
-    public class IBeerService : BeerService  // Исправлен на BeerService, а не IBeerService
+    public class BeerService : IBeerService  // Исправлен на BeerService, а не IBeerService
     {
         private readonly ApplicationDbContext _context;
 
-        public IBeerService(ApplicationDbContext context)
+        public BeerService(ApplicationDbContext context)
         {
             _context = context;
         }

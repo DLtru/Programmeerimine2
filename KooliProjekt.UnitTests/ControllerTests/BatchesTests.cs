@@ -26,7 +26,6 @@ namespace KooliProjekt.UnitTests.ControllerTests
         [Fact]
         public async Task Index_Should_Return_Correct_View_With_Data()
         {
-            // Arrange
             int page = 1;
             var data = new List<Batch>
             {
@@ -43,10 +42,8 @@ namespace KooliProjekt.UnitTests.ControllerTests
             };
             batchServiceMock.Setup(x => x.List(page, It.IsAny<int>(), It.IsAny<BatchesSearch>())).ReturnsAsync(pagedResult);
 
-            // Act
             var result = await controller.Index(page) as ViewResult;
 
-            // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Model);
             Assert.IsType<BatchesIndexModel>(result.Model);
@@ -59,33 +56,29 @@ namespace KooliProjekt.UnitTests.ControllerTests
         [Fact]
         public async Task Details_Should_Return_NotFound_When_Id_Is_Null()
         {
-            // Arrange
             int? id = null;
 
-            // Act
             var result = await controller.Details(id) as NotFoundResult;
 
-            // Assert
             Assert.NotNull(result);
         }
 
         [Fact]
         public async Task Details_Should_Return_Correct_View_With_Model()
         {
-            // Arrange
             var batch = new Batch { Id = 1, Code = "B001", Description = "First Batch" };
             batchServiceMock.Setup(x => x.GetById(1)).ReturnsAsync(batch);
 
-            // Act
-            var result = await controller.Details(1) as ViewResult;
+            var result = await controller.Details(1);
 
-            // Assert
             Assert.NotNull(result);
-            Assert.NotNull(result.Model);
-            Assert.IsType<Batch>(result.Model);
-            var model = (Batch)result.Model;
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.NotNull(viewResult.Model);
+            var model = Assert.IsType<Batch>(viewResult.Model);
             Assert.Equal(batch.Id, model.Id);
             Assert.Equal(batch.Code, model.Code);
+            Assert.Equal(batch.Description, model.Description);
         }
+
     }
 }

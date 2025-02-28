@@ -9,9 +9,9 @@ namespace KooliProjekt.Controllers
 {
     public class BeersController : Controller
     {
-        private readonly BeerService _beerService;
+        private readonly IBeerService _beerService;
 
-        public BeersController(BeerService beerService)
+        public BeersController(IBeerService beerService)
         {
             _beerService = beerService ?? throw new ArgumentNullException(nameof(beerService));
         }
