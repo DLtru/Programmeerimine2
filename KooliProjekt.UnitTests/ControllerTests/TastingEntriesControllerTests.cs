@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using KooliProjekt.Controllers;
+﻿using KooliProjekt.Controllers;
 using KooliProjekt.Data;
 using KooliProjekt.Models;
 using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace KooliProjekt.UnitTests.ControllerTests
@@ -40,9 +42,9 @@ namespace KooliProjekt.UnitTests.ControllerTests
             var result = await _controller.Index(null, page) as ViewResult;
 
             // Assert
-            Assert.NotNull(result); // проверка, что результат не null
-            var viewModel = Assert.IsType<TastingEntriesIndexModel>(result.Model); // проверка, что модель соответствует ожидаемой
-            Assert.Equal(data.Count, viewModel.Data.Results.Count); // проверка, что количество элементов соответствует ожидаемому
+            Assert.NotNull(result);
+            var viewModel = Assert.IsType<TastingEntriesIndexModel>(result.Model);
+            Assert.Equal(data.Count, viewModel.Data.Results.Count);
         }
     }
 }

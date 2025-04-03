@@ -24,7 +24,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Theory]
-        [InlineData(1)] // Пример передачи значения для pageIndex
+        [InlineData(1)]
         public async Task IndexShouldReturnCorrectViewWithData(int pageIndex)
         {
             // Arrange
@@ -48,22 +48,16 @@ namespace KooliProjekt.UnitTests.ControllerTests
             // Act
             var result = await _controller.Index(pageIndex) as ViewResult;
 
-            // Проверка, что результат контроллера не null
             Assert.NotNull(result);
 
-            // Проверка, что результат — это ViewResult
             Assert.IsType<ViewResult>(result);
 
-            // Проверка, что модель в результате не null
             Assert.NotNull(result.Model);
 
-            // Проверка, что модель является PagedResult<Photo>
             var model = Assert.IsType<PagedResult<Photo>>(result.Model);
 
-            // Проверка, что количество элементов в модели совпадает с количеством в data
             Assert.Equal(data.Count, model.Results.Count);
 
-            // Убедимся, что сервис был вызван один раз
             _photoServiceMock.VerifyAll();
         }
 

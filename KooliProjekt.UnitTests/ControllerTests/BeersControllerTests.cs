@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using KooliProjekt.Controllers;
-using KooliProjekt.Models;
-using KooliProjekt.Services;
+﻿using KooliProjekt.Controllers;
+using KooliProjekt.Data;
 using KooliProjekt.Search;
+using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Xunit;
-using KooliProjekt.Data;
 
 namespace KooliProjekt.UnitTests.ControllerTests
 {
@@ -49,11 +50,11 @@ namespace KooliProjekt.UnitTests.ControllerTests
             // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Model);
-            Assert.IsType<BeersIndexModel>(result.Model);
-            var model = (BeersIndexModel)result.Model;
-            Assert.NotNull(model.Data);
-            Assert.Equal(pagedResult.Results.Count, model.Data.Results.Count);
-            Assert.Equal(pagedResult.Results[0].Name, model.Data.Results[0].Name);
+            Assert.IsType<PagedResult<Beer>>(result.Model);
+            var model = (PagedResult<Beer>)result.Model;
+            Assert.NotNull(model);
+            Assert.Equal(pagedResult.Results.Count, model.Results.Count);
+            Assert.Equal(pagedResult.Results[0].Name, model.Results[0].Name);
         }
 
         [Fact]

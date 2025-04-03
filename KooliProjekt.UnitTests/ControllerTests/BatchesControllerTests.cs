@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using KooliProjekt.Controllers;
+﻿using KooliProjekt.Controllers;
+using KooliProjekt.Data;
 using KooliProjekt.Models;
-using KooliProjekt.Services;
 using KooliProjekt.Search;
+using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Xunit;
-using KooliProjekt.Data;
 
 namespace KooliProjekt.UnitTests.ControllerTests
 {
@@ -80,5 +82,43 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.Equal(batch.Description, model.Description);
         }
 
+        [Fact]
+        public void Create_Should_Return_Correct_View()
+        {
+            var result = controller.Create() as ViewResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Delete_Should_Return_Correct_View_When_Id_Is_Valid()
+        {
+            int id = 1;
+            var batch = new Batch { Id = id, Code = "B001", Description = "First Batch" };
+
+            batchServiceMock.Setup(x => x.GetById(id)).ReturnsAsync(batch);
+
+            var resultRaw = await controller.Delete(id);
+            var result =  resultRaw as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Model);
+            var model = Assert.IsType<Batch>(result.Model);
+            Assert.Equal(batch.Id, model.Id);
+            Assert.Equal(batch.Code, model.Code);
+            Assert.Equal(batch.Description, model.Description);
+        }
+
+
+
+        [Fact]
+        public async Task Delete_Should_Return_NotFound_When_Id_Is_Null()
+        {
+            int? id = null;
+
+            var result = await controller.Delete(id) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
     }
 }

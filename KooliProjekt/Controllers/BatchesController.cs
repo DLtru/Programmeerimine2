@@ -48,7 +48,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var batch = await _batchService.GetBatchByIdAsync(id.Value);
+            var batch = await _batchService.GetById(id.Value);
             if (batch == null)
             {
                 return NotFound();
@@ -132,7 +132,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var batch = await _batchService.GetBatchByIdAsync(id.Value);
+            var batch = await _batchService.GetById(id.Value);
             if (batch == null)
             {
                 return NotFound();
