@@ -87,5 +87,10 @@ namespace KooliProjekt.Services
         {
             return _context.Batches.Any(e => e.Id == id);
         }
+
+        public void AddAsync(Batch batch)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

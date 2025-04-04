@@ -18,5 +18,6 @@ namespace KooliProjekt.Services
         Task DeleteBatchAsync(int id);
         Task Delete(int id);
         bool BatchExists(int id);
+        void AddAsync(Batch batch);
     }
 }

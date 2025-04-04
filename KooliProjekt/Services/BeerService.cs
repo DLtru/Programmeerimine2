@@ -72,6 +72,16 @@ namespace KooliProjekt.Services
             }
         }
 
+        public async Task Delete(int id)
+        {
+            var beer = await _context.Beers.FindAsync(id);
+            if (beer != null)
+            {
+                _context.Beers.Remove(beer);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public void List(int page, int v, UnitTests.ControllerTests.BeersSearch beersSearch)
         {
             throw new NotImplementedException();

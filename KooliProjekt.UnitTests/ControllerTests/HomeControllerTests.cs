@@ -14,8 +14,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
 
         public HomeControllerTests()
         {
-            var loggerMock = new Mock<ILogger<HomeController>>();
-            _controller = new HomeController(loggerMock.Object);
+            _controller = new HomeController();
 
             var httpContextMock = new Mock<HttpContext>();
             httpContextMock.Setup(x => x.TraceIdentifier).Returns("TestTraceId");
@@ -28,10 +27,8 @@ namespace KooliProjekt.UnitTests.ControllerTests
         [Fact]
         public void Index_Should_Return_Index_View()
         {
-            // Act
             var result = _controller.Index() as ViewResult;
 
-            // Assert
             Assert.NotNull(result);
             Assert.True(result.ViewName == "Index" || string.IsNullOrEmpty(result.ViewName));
         }
@@ -39,10 +36,8 @@ namespace KooliProjekt.UnitTests.ControllerTests
         [Fact]
         public void Privacy_Should_Return_Correct_View()
         {
-            // Act
             var result = _controller.Privacy() as ViewResult;
 
-            // Assert
             Assert.NotNull(result);
             Assert.True(result.ViewName == "Privacy" || string.IsNullOrEmpty(result.ViewName));
         }
@@ -50,10 +45,8 @@ namespace KooliProjekt.UnitTests.ControllerTests
         [Fact]
         public void Error_Should_Return_Correct_View()
         {
-            // Act
             var result = _controller.Error() as ViewResult;
 
-            // Assert
             Assert.NotNull(result);
             var model = result.Model as ErrorViewModel;
             Assert.NotNull(model);

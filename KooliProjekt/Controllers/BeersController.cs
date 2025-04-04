@@ -46,6 +46,13 @@ namespace KooliProjekt.Controllers
             return View(pagedBeers);
         }
 
+        // Новый метод Index, исправленный
+        public async Task<IActionResult> Index(int page, BeerSearch searchParams)
+        {
+            var pagedBeers = await _beerService.List(page, 5, searchParams);
+            return View(pagedBeers);
+        }
+
         // GET: Beers/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -140,7 +147,7 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _beerService.DeleteBeerAsync(id);
+            await _beerService.Delete(id);
             Console.WriteLine($"Beer deleted: ID={id}");
             return RedirectToAction(nameof(Index));
         }

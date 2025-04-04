@@ -1,6 +1,7 @@
 ﻿using KooliProjekt.Controllers;
 using KooliProjekt.Data;
 using KooliProjekt.Models;
+using KooliProjekt.Search;
 using KooliProjekt.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -15,36 +16,75 @@ namespace KooliProjekt.UnitTests.ControllerTests
 {
     public class LogEntriesControllerTests
     {
-        private readonly Mock<ILogEntryService> _logEntryServiceMock;
-        private readonly LogEntriesController _controller;
+        private readonly Mock<IBeerService> _beerServiceMock;
+        private readonly BeersController _controller;
 
         public LogEntriesControllerTests()
         {
-            _logEntryServiceMock = new Mock<ILogEntryService>();
-            _controller = new LogEntriesController(_logEntryServiceMock.Object);
+            _beerServiceMock = new Mock<IBeerService>();
+            _controller = new BeersController(_beerServiceMock.Object);
         }
 
         [Fact]
-        public async Task Index_should_return_correct_view_with_data()
+        public async Task Delete_should_return_correct_view_with_model()
         {
-            // Arrange
-            int page = 1;
-            var data = new List<LogEntry>
-            {
-                new LogEntry { Id = 1, Title = "Test 1" },
-                new LogEntry { Id = 2, Title = "Test 2" }
-            };
-            var pagedResult = new PagedResult<LogEntry> { Results = data };
-            _logEntryServiceMock.Setup(x => x.List(page, It.IsAny<int>(), null)).ReturnsAsync(pagedResult);
+            var beer = new Beer { Id = 1, Name = "Test Beer", Type = "Lager" };
+            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(1)).ReturnsAsync(beer);
 
-            // Act
-            var result = await _controller.Index(null, page) as ViewResult;
+            var result = await _controller.Delete(1) as ViewResult;
 
-            // Assert
             Assert.NotNull(result);
-            Assert.IsType<LogEntriesIndexModel>(result.Model);
-            var model = result.Model as LogEntriesIndexModel;
-            Assert.Equal(pagedResult, model?.Data);
+            var model = result.Model as Beer;
+            Assert.NotNull(model);
+            Assert.Equal(beer.Id, model.Id);
+            Assert.Equal(beer.Name, model.Name);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_notfound_when_beer_not_found()
+        {
+            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(1)).ReturnsAsync((Beer)null);
+
+            var result = await _controller.Delete(1) as NotFoundResult;
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task DeleteConfirmed_should_redirect_to_index_when_beer_is_deleted()
+        {
+            var beerId = 1;
+            _beerServiceMock.Setup(x => x.DeleteBeerAsync(beerId)).Returns(Task.CompletedTask);
+
+            var result = await _controller.DeleteConfirmed(beerId) as RedirectToActionResult;
+
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+        }
+
+        [Fact]
+        public async Task Details_should_return_correct_view_with_model()
+        {
+            var beer = new Beer { Id = 1, Name = "Test Beer", Type = "Lager" };
+            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(1)).ReturnsAsync(beer);
+
+            var result = await _controller.Details(1) as ViewResult;
+
+            Assert.NotNull(result);
+            var model = result.Model as Beer;
+            Assert.NotNull(model);
+            Assert.Equal(beer.Id, model.Id);
+            Assert.Equal(beer.Name, model.Name);
+        }
+
+        [Fact]
+        public async Task Details_should_return_notfound_when_beer_not_found()
+        {
+            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(1)).ReturnsAsync((Beer)null);
+
+            var result = await _controller.Details(1) as NotFoundResult;
+
+            Assert.NotNull(result);
         }
     }
 }

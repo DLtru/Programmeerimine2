@@ -99,7 +99,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
             batchServiceMock.Setup(x => x.GetById(id)).ReturnsAsync(batch);
 
             var resultRaw = await controller.Delete(id);
-            var result =  resultRaw as ViewResult;
+            var result = resultRaw as ViewResult;
 
             Assert.NotNull(result);
             Assert.NotNull(result.Model);
@@ -119,6 +119,20 @@ namespace KooliProjekt.UnitTests.ControllerTests
             var result = await controller.Delete(id) as NotFoundResult;
 
             Assert.NotNull(result);
+        }
+        [Fact]
+        public async Task DeleteConfirmed_Should_Delete_Batch_And_Redirect()
+        {
+            int id = 1;
+
+            batchServiceMock.Setup(x => x.Delete(id)).Returns(Task.CompletedTask).Verifiable();
+
+            var result = await controller.DeleteConfirmed(id) as RedirectToActionResult;
+
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+
+            batchServiceMock.Verify(x => x.Delete(id), Times.Once);
         }
     }
 }

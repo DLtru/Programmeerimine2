@@ -146,13 +146,18 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _batchService.DeleteBatchAsync(id);
+            await _batchService.Delete(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool BatchExists(int id)
         {
             return _batchService.BatchExists(id);
+        }
+
+        public async Task<RedirectToActionResult> Edit(Batch updatedBatch)
+        {
+            throw new NotImplementedException();
         }
     }
 }

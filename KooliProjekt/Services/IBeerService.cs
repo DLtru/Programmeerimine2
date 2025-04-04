@@ -10,5 +10,6 @@ namespace KooliProjekt.Services
         Task AddBeerAsync(Beer beer);
         Task UpdateBeerAsync(Beer beer);
         Task DeleteBeerAsync(int id);
+        Task Delete(int id);
     }
 }
