@@ -77,10 +77,43 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Create_Should_Return_Correct_View()
+        public async Task Create_Should_Return_Correct_View_When_Model_Is_Valid()
         {
-            var result = await controller.Create(null) as ViewResult;
+            // Arrange: Create a valid Beer object
+            var beer = new Beer { Id = 1, Name = "Test Beer", AlcoholPercentage = 5.0 };
+
+            // Ensure the ModelState is clear (valid model)
+            controller.ModelState.Clear();
+
+            // Act: Call the Create method
+            var result = await controller.Create(beer) as RedirectToActionResult;
+
+            // Assert: Check if we redirected to the Index view
             Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+
+            // Verify that the AddBeerAsync method was called with the correct parameter
+            beerServiceMock.Verify(x => x.AddBeerAsync(beer), Times.Once);
+        }
+
+        [Fact]
+        public async Task Create_Should_Return_View_When_Model_Is_Invalid()
+        {
+            // Arrange: Create an invalid Beer object (e.g., missing required fields)
+            var beer = new Beer { Id = 1, Name = "", AlcoholPercentage = 5.0 };  // Invalid name
+
+            // Simulate a model error (Name field is required)
+            controller.ModelState.AddModelError("Name", "The Name field is required.");
+
+            // Act: Call the Create method
+            var result = await controller.Create(beer) as ViewResult;
+
+            // Assert: Check if the model is passed back to the view
+            Assert.NotNull(result);
+            Assert.Equal(beer, result.Model);
+
+            // Verify that the AddBeerAsync method was not called
+            beerServiceMock.Verify(x => x.AddBeerAsync(It.IsAny<Beer>()), Times.Never);
         }
 
         [Fact]

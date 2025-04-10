@@ -109,7 +109,7 @@ namespace KooliProjekt.Controllers
         // POST: Beers/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Type")] Beer beer)
+        public async Task<IActionResult> Edit(int id, Beer beer)
         {
             if (id != beer.Id)
             {

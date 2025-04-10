@@ -126,6 +126,12 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var tastingEntry = await _tastingEntryService.GetTastingEntryByIdAsync(id);
+            if(tastingEntry == null)
+            {
+                return NotFound();
+            }
+
             await _tastingEntryService.DeleteTastingEntryAsync(id);
             return RedirectToAction(nameof(Index));
         }

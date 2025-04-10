@@ -78,11 +78,13 @@ namespace KooliProjekt.Services
         public async Task DeleteTastingEntryAsync(int id)
         {
             var tastingEntry = await GetTastingEntryByIdAsync(id);
-            if (tastingEntry != null)
+            if (tastingEntry == null)
             {
-                _context.TastingEntries.Remove(tastingEntry);
-                await _context.SaveChangesAsync();
+                return;
             }
+
+            _context.TastingEntries.Remove(tastingEntry);
+            await _context.SaveChangesAsync();
         }
 
         public IEnumerable<Batch> GetBatches()

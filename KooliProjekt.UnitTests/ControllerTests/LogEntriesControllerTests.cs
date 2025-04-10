@@ -63,12 +63,40 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Details_should_return_correct_view_with_model()
+        public async Task Create_should_return_correct_view_when_model_is_valid()
         {
             var beer = new Beer { Id = 1, Name = "Test Beer", Type = "Lager" };
-            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(1)).ReturnsAsync(beer);
 
-            var result = await _controller.Details(1) as ViewResult;
+            _controller.ModelState.Clear();  // Ensure model state is valid
+
+            var result = await _controller.Create(beer) as RedirectToActionResult;
+
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+            _beerServiceMock.Verify(x => x.AddBeerAsync(beer), Times.Once);
+        }
+
+        [Fact]
+        public async Task Create_should_return_view_when_model_is_invalid()
+        {
+            var beer = new Beer { Id = 1, Name = "", Type = "Lager" };  // Invalid model due to empty name
+
+            _controller.ModelState.AddModelError("Name", "The Name field is required.");
+
+            var result = await _controller.Create(beer) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(beer, result.Model);
+            _beerServiceMock.Verify(x => x.AddBeerAsync(It.IsAny<Beer>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Edit_should_return_correct_view_when_model_is_valid()
+        {
+            var beer = new Beer { Id = 1, Name = "Test Beer", Type = "Lager" };
+            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(beer.Id)).ReturnsAsync(beer);
+
+            var result = await _controller.Edit(beer.Id) as ViewResult;
 
             Assert.NotNull(result);
             var model = result.Model as Beer;
@@ -78,13 +106,53 @@ namespace KooliProjekt.UnitTests.ControllerTests
         }
 
         [Fact]
-        public async Task Details_should_return_notfound_when_beer_not_found()
+        public async Task Edit_should_return_notfound_when_beer_not_found()
         {
-            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(1)).ReturnsAsync((Beer)null);
+            int beerId = 1;
+            _beerServiceMock.Setup(x => x.GetBeerByIdAsync(beerId)).ReturnsAsync((Beer)null);
 
-            var result = await _controller.Details(1) as NotFoundResult;
+            var result = await _controller.Edit(beerId) as NotFoundResult;
 
             Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Edit_should_return_view_when_model_is_invalid()
+        {
+            var beer = new Beer { Id = 1, Name = "", Type = "Lager" };  // Invalid model due to empty name
+            _controller.ModelState.AddModelError("Name", "The Name field is required.");
+
+            var result = await _controller.Edit(beer.Id, beer) as ViewResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(beer, result.Model);
+            _beerServiceMock.Verify(x => x.UpdateBeerAsync(It.IsAny<Beer>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Edit_should_redirect_when_model_is_valid_and_updated()
+        {
+            var beer = new Beer { Id = 1, Name = "Updated Beer", Type = "Ale" };
+            _beerServiceMock.Setup(x => x.UpdateBeerAsync(beer)).Returns(Task.CompletedTask).Verifiable();
+
+            var result = await _controller.Edit(beer.Id, beer) as RedirectToActionResult;
+
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+            _beerServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task DeleteConfirmed_should_delete_beer_and_redirect()
+        {
+            var beerId = 1;
+            _beerServiceMock.Setup(x => x.Delete(beerId)).Returns(Task.CompletedTask).Verifiable();
+
+            var result = await _controller.DeleteConfirmed(beerId) as RedirectToActionResult;
+
+            Assert.NotNull(result);
+            Assert.Equal("Index", result.ActionName);
+            _beerServiceMock.VerifyAll();
         }
     }
 }

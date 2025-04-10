@@ -76,6 +76,12 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var photo = await _photoService.GetPhotoByIdAsync(id);
+            if (photo == null)
+            {
+                return NotFound();
+            }
+
             await _photoService.DeletePhotoAsync(id);
             return RedirectToAction(nameof(Index));
         }
