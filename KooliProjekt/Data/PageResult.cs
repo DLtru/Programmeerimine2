@@ -16,6 +16,7 @@ namespace KooliProjekt.Data
             RowCount = rowCount;
             Page = page;
             PageSize = pageSize;
+            Results = results;
         }
 
         public IList<T> Results { get; set; }

@@ -9,14 +9,15 @@ namespace KooliProjekt.Services
     public interface IBatchService
     {
         Task<PagedResult<Batch>> List(int page, int pageSize, BatchesSearch search);
-        Task<Batch> GetById(int id); // Метод для получения Batch по ID
-        Task<string> GetBatchByIdAsync(int value); // Метод для получения кода Batch по ID
+        Task<Batch> GetById(int id);
+        Task<string> GetBatchByIdAsync(int value);
         Task AddBatchAsync(Batch batch);
         Task Add(Batch batch);
         Task UpdateBatchAsync(Batch batch);
         Task Update(Batch batch);
         Task DeleteBatchAsync(int id);
         Task Delete(int id);
+        Task Save(Batch batch);
         bool BatchExists(int id);
         void AddAsync(Batch batch);
     }

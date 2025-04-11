@@ -72,14 +72,17 @@ namespace KooliProjekt.UnitTests.ControllerTests
         public async Task DeleteConfirmed_should_redirect_on_success()
         {
             int photoId = 1;
+            var photo = new Photo { Id = photoId, Title = "Photo to delete" };
+            _photoServiceMock.Setup(x => x.GetPhotoByIdAsync(photoId)).ReturnsAsync(photo);
             _photoServiceMock.Setup(x => x.DeletePhotoAsync(photoId)).Returns(Task.CompletedTask);
 
             var result = await _controller.DeleteConfirmed(photoId) as RedirectToActionResult;
 
             Assert.NotNull(result);
             Assert.Equal("Index", result.ActionName);
-            _photoServiceMock.Verify(x => x.DeletePhotoAsync(photoId), Times.Once);
+            _photoServiceMock.VerifyAll();
         }
+
 
         [Fact]
         public async Task DeleteConfirmed_should_return_notfound_when_delete_fails()

@@ -15,5 +15,8 @@ namespace KooliProjekt.Data
         public string Type { get; set; }
         public string Title { get; set; }
         public double AlcoholPercentage { get; set; }
+        public double AlcoholContent { get; set; }
+        public string Code { get; set; }
+        public DateTime BrewingDate { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace KooliProjekt.Services
         public async Task<string> GetBatchByIdAsync(int value)
         {
             var batch = await _context.Batches.FindAsync(value);
-            return batch != null ? batch.Code : null; // Возвращаем только код, если найден
+            return batch != null ? batch.Code : null;
         }
 
         public async Task Add(Batch batch)
@@ -81,6 +81,20 @@ namespace KooliProjekt.Services
         public async Task DeleteBatchAsync(int id)
         {
             await Delete(id);
+        }
+
+        public async Task Save(Batch batch)
+        {
+            if (batch.Id == 0)
+            {
+                await _context.Batches.AddAsync(batch);
+            }
+            else
+            {
+                _context.Batches.Update(batch);
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         public bool BatchExists(int id)

@@ -39,7 +39,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
                 PageIndex = 1,
                 PageNumber = 1
             };
-            beerServiceMock.Setup(x => x.List(page, It.IsAny<int>(), It.IsAny<BeerSearch>())).ReturnsAsync(pagedResult);
+            beerServiceMock.Setup(x => x.List(page, It.IsAny<int>(), It.IsAny<BeersSearch>())).ReturnsAsync(pagedResult);
 
             var result = await controller.Index(page) as ViewResult;
 

@@ -4,10 +4,12 @@ using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
-
+using KooliProjekt.Services;
 namespace KooliProjekt.Services
+
+
 {
-    public class BeerService : IBeerService  // Исправлен на BeerService, а не IBeerService
+    public class BeerService : IBeerService
     {
         private readonly ApplicationDbContext _context;
 
@@ -16,7 +18,7 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<PagedResult<Beer>> List(int page, int pageSize, BeerSearch searchModel = null)
+        public async Task<PagedResult<Beer>> List(int page, int pageSize, BeersSearch searchModel = null)
         {
             var query = _context.Beers.AsQueryable();
 
@@ -26,17 +28,12 @@ namespace KooliProjekt.Services
                 {
                     query = query.Where(b => b.Name.Contains(searchModel.Name));
                 }
-
-                if (!string.IsNullOrEmpty(searchModel.Type))
-                {
-                    query = query.Where(b => b.Type.Contains(searchModel.Type));
-                }
             }
 
             return await query.GetPagedAsync(page, pageSize);
         }
 
-        public async Task<Beer> GetBeerByIdAsync(int id)  // Получаем пиво по id
+        public async Task<Beer> GetBeerByIdAsync(int id)
         {
             return await _context.Beers
                 .FirstOrDefaultAsync(b => b.Id == id);
@@ -72,6 +69,19 @@ namespace KooliProjekt.Services
             }
         }
 
+        public async Task Save(Beer beer)
+        {
+            if (beer.Id == 0)
+            {
+                _context.Beers.Add(beer);
+            }
+            else
+            {
+                _context.Beers.Update(beer);
+            }
+            await _context.SaveChangesAsync();
+        }
+
         public async Task Delete(int id)
         {
             var beer = await _context.Beers.FindAsync(id);
@@ -80,16 +90,6 @@ namespace KooliProjekt.Services
                 _context.Beers.Remove(beer);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public void List(int page, int v, UnitTests.ControllerTests.BeersSearch beersSearch)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void GetById(int v)
-        {
-            throw new NotImplementedException();
         }
     }
 }

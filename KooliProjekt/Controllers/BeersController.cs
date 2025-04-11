@@ -19,10 +19,10 @@ namespace KooliProjekt.Controllers
         // GET: Beers
         public async Task<IActionResult> Index(int page = 1, string searchName = "", string searchType = "")
         {
-            var searchModel = new BeerSearch
+            var searchModel = new BeersSearch
             {
                 Name = searchName,
-                Type = searchType
+                //Type = searchType
             };
 
             // Получаем список пива с учетом пагинации и поиска
@@ -47,7 +47,7 @@ namespace KooliProjekt.Controllers
         }
 
         // Новый метод Index, исправленный
-        public async Task<IActionResult> Index(int page, BeerSearch searchParams)
+        public async Task<IActionResult> Index(int page, BeersSearch searchParams)
         {
             var pagedBeers = await _beerService.List(page, 5, searchParams);
             return View(pagedBeers);
