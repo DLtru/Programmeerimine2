@@ -96,5 +96,10 @@ namespace KooliProjekt.Services
         {
             return (IEnumerable<User>)_context.Users.ToList();
         }
+
+        public object Get(int v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
