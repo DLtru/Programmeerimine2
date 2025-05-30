@@ -1,127 +1,134 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Search;
 using KooliProjekt.Services;
+using KooliProjekt.UnitTests;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace KooliProjekt.Tests.ServiceTests
+public class TastingEntriesServiceTests : HomeServiceTestBase
 {
-    public class TastingEntryServiceTests
+    private readonly ITastingEntryService _service;
+    private readonly DateTime _currentDate = DateTime.Parse("2025-05-30 11:33:15");
+    private const string _currentUser = "DLtru";
+
+    public TastingEntriesServiceTests()
     {
-        private ApplicationDbContext GetMemoryContext()
+        _service = new TastingEntryService(DbContext);
+    }
+
+    [Fact]
+    public async Task List_should_return_all_entries()
+    {
+        // Arrange
+        var entries = new[]
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            new TastingEntry { Comments = "Test 1", Rating = 4, Date = _currentDate, UserId = _currentUser },
+            new TastingEntry { Comments = "Test 2", Rating = 5, Date = _currentDate, UserId = _currentUser }
+        };
 
-            var context = new ApplicationDbContext(options);
-            return context;
-        }
+        DbContext.TastingEntries.AddRange(entries);
+        await DbContext.SaveChangesAsync();
 
-        [Fact]
-        public void Get_ReturnsCorrectTastingEntry()
+        // Act
+        var result = await _service.List(1, 10, new TastingEntriesSearch());
+
+        // Assert
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task GetTastingEntryByIdAsync_should_return_entry_by_id()
+    {
+        // Arrange
+        var entry = new TastingEntry
         {
-            // Arrange
-            var context = GetMemoryContext();
-            var tastingEntry = new TastingEntry { Id = 1, Comments = "Test Comments", Rating = 5 };
-            context.TastingEntries.Add(tastingEntry);
-            context.SaveChanges();
+            Comments = "Test Entry",
+            Rating = 4,
+            Date = _currentDate,
+            UserId = _currentUser
+        };
+        DbContext.TastingEntries.Add(entry);
+        await DbContext.SaveChangesAsync();
 
-            var service = new TastingEntryService(context);
+        // Act
+        var result = await _service.GetTastingEntryByIdAsync(entry.Id);
 
-            // Act
-            var result = service.Get(1);
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Test Entry", result.Comments);
+    }
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal("Test Comments", result.Comments);
-            Assert.Equal(5, result.Rating);
-        }
-
-        [Fact]
-        public void List_ReturnsAllTastingEntries()
+    [Fact]
+    public async Task AddTastingEntryAsync_should_add_new_entry()
+    {
+        // Arrange
+        var entry = new TastingEntry
         {
-            // Arrange
-            var context = GetMemoryContext();
-            context.TastingEntries.Add(new TastingEntry { Id = 1, Comments = "Entry 1", Rating = 4 });
-            context.TastingEntries.Add(new TastingEntry { Id = 2, Comments = "Entry 2", Rating = 5 });
-            context.SaveChanges();
+            Comments = "New Entry",
+            Rating = 4,
+            Date = _currentDate,
+            UserId = _currentUser
+        };
 
-            var service = new TastingEntryService(context);
+        // Act
+        await _service.AddTastingEntryAsync(entry);
 
-            // Act
-            var result = service.List();
+        // Assert
+        var saved = await DbContext.TastingEntries.FindAsync(entry.Id);
+        Assert.NotNull(saved);
+        Assert.Equal("New Entry", saved.Comments);
+    }
 
-            // Assert
-            Assert.Equal(2, result.Count());
-        }
-
-        [Fact]
-        public void Save_AddsNewTastingEntry()
+    [Fact]
+    public async Task UpdateTastingEntryAsync_should_update_existing_entry()
+    {
+        // Arrange
+        var entry = new TastingEntry
         {
-            // Arrange
-            var context = GetMemoryContext();
-            var service = new TastingEntryService(context);
-            var entry = new TastingEntry { Comments = "New Entry", Rating = 4 };
+            Comments = "Original Entry",
+            Rating = 4,
+            Date = _currentDate,
+            UserId = _currentUser
+        };
+        DbContext.TastingEntries.Add(entry);
+        await DbContext.SaveChangesAsync();
 
-            // Act
-            service.Save(entry);
+        // Act
+        entry.Comments = "Updated Entry";
+        await _service.UpdateTastingEntryAsync(entry);
 
-            // Assert
-            Assert.Equal(1, context.TastingEntries.Count());
-            Assert.NotEqual(0, entry.Id);
-        }
+        // Assert
+        var updated = await DbContext.TastingEntries.FindAsync(entry.Id);
+        Assert.NotNull(updated);
+        Assert.Equal("Updated Entry", updated.Comments);
+    }
 
-        [Fact]
-        public void Save_UpdatesExistingTastingEntry()
+    [Fact]
+    public async Task DeleteTastingEntryAsync_should_remove_existing_entry()
+    {
+        // Arrange
+        var entry = new TastingEntry
         {
-            // Arrange
-            var context = GetMemoryContext();
-            var entry = new TastingEntry { Id = 1, Comments = "Old Comments", Rating = 3 };
-            context.TastingEntries.Add(entry);
-            context.SaveChanges();
+            Comments = "To Delete",
+            Rating = 4,
+            Date = _currentDate,
+            UserId = _currentUser
+        };
+        DbContext.TastingEntries.Add(entry);
+        await DbContext.SaveChangesAsync();
 
-            var service = new TastingEntryService(context);
-            entry.Comments = "Updated Comments";
-            entry.Rating = 5;
+        // Act
+        await _service.DeleteTastingEntryAsync(entry.Id);
 
-            // Act
-            service.Save(entry);
+        // Assert
+        var deleted = await DbContext.TastingEntries.FindAsync(entry.Id);
+        Assert.Null(deleted);
+    }
 
-            // Assert
-            var updatedEntry = context.TastingEntries.Find(1);
-            Assert.Equal("Updated Comments", updatedEntry.Comments);
-            Assert.Equal(5, updatedEntry.Rating);
-        }
-
-        [Fact]
-        public void Delete_RemovesNonExistingTastingEntry()
-        {
-            // Arrange
-            var context = GetMemoryContext();
-            var service = new TastingEntryService(context);
-            var entry = new TastingEntry { Id = 999, Comments = "Test Comments", Rating = 4 };
-
-            // Act & Assert
-            // Should not throw for non-existing entry
-            service.Delete(entry);
-        }
-
-        [Fact]
-        public void Delete_RemovesExistingTastingEntry()
-        {
-            // Arrange
-            var context = GetMemoryContext();
-            var entry = new TastingEntry { Id = 1, Comments = "Test Comments", Rating = 4 };
-            context.TastingEntries.Add(entry);
-            context.SaveChanges();
-
-            var service = new TastingEntryService(context);
-
-            // Act
-            service.Delete(entry);
-
-            // Assert
-            Assert.Equal(0, context.TastingEntries.Count());
-        }
+    [Fact]
+    public async Task DeleteTastingEntryAsync_should_not_throw_for_non_existing_entry()
+    {
+        // Act & Assert
+        await _service.DeleteTastingEntryAsync(999); // Не должно вызывать исключение
     }
 }

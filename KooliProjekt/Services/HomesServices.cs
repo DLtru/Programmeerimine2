@@ -1,19 +1,15 @@
 ﻿using KooliProjekt.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
 {
     public class HomeService
     {
-        private ApplicationDbContext dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         public HomeService(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
-        }
-
-        public async Task GetDashboardData()
-        {
-            throw new NotImplementedException();
         }
 
         public List<string> GetHomePageData()

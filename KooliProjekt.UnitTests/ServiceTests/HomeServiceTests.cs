@@ -1,8 +1,5 @@
-﻿using KooliProjekt.Data;
-using KooliProjekt.Services;
-using KooliProjekt.UnitTests.ServiceTestBase;
-using System;
-using System.Threading.Tasks;
+﻿using KooliProjekt.Services;
+using System.Collections.Generic;
 using Xunit;
 
 namespace KooliProjekt.UnitTests.ServiceTests
@@ -16,21 +13,21 @@ namespace KooliProjekt.UnitTests.ServiceTests
             _service = new HomeService(DbContext);
         }
 
-        // Примечание: в зависимости от реализации HomeService, 
-        // может потребоваться дополнить или изменить эти тесты
-
         [Fact]
-        public async Task GetDashboardData_should_return_dashboard_data()
+        public void GetHomePageData_ShouldReturnCorrectData()
         {
-            // Arrange
-            // Добавьте необходимые данные в контекст базы данных
-
             // Act
-            var result = await _service.GetDashboardData();
+            var result = _service.GetHomePageData();
 
             // Assert
             Assert.NotNull(result);
-            // Дополнительные утверждения в зависимости от структуры данных Dashboard
+            Assert.IsType<List<string>>(result);
+            Assert.Equal(5, result.Count);
+            Assert.Contains("ASP.NET Core", result);
+            Assert.Contains("C#", result);
+            Assert.Contains("MVC", result);
+            Assert.Contains("Razor Pages", result);
+            Assert.Contains("Web API", result);
         }
     }
 }

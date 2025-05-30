@@ -1,11 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using KooliProjekt.Data;
+﻿using KooliProjekt.Data;
 using KooliProjekt.Models;
 using KooliProjekt.Search;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Services
 {
@@ -18,54 +16,63 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
+
         public async Task<PagedResult<Batch>> List(int page, int pageSize, BatchesSearch search)
         {
             var query = _context.Batches.AsQueryable();
 
             if (!string.IsNullOrEmpty(search.Keyword))
             {
-                query = query.Where(b => b.Code.Contains(search.Keyword) || b.Description.Contains(search.Keyword));
+                query = query.Where(x => x.Description.Contains(search.Keyword));
             }
 
-            if (search.Done.HasValue)
+            if (!string.IsNullOrEmpty(search.Code))
             {
-                query = query.Where(b => b.Done == search.Done.Value);
+                query = query.Where(x => x.Code.Contains(search.Code));
             }
 
-            return await query.GetPagedAsync(page, pageSize);
+            if (search.StartDate.HasValue)
+            {
+                query = query.Where(x => x.Date >= search.StartDate.Value);
+            }
+
+            if (search.EndDate.HasValue)
+            {
+                query = query.Where(x => x.Date <= search.EndDate.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Batch>
+            {
+                Data = new PagedList<Batch>
+                {
+                    Results = items,
+                    Total = totalCount
+                }
+            };
         }
 
-        public async Task<Batch> GetById(int id)
+        public async Task<Batch> Get(int id)
         {
             return await _context.Batches.FindAsync(id);
         }
 
-        public async Task<string> GetBatchByIdAsync(int value)
+        public async Task Save(Batch batch)
         {
-            var batch = await _context.Batches.FindAsync(value);
-            return batch != null ? batch.Code : null;
-        }
-
-        public async Task Add(Batch batch)
-        {
-            await _context.Batches.AddAsync(batch);
+            if (batch.Id == 0)
+            {
+                _context.Batches.Add(batch);
+            }
+            else
+            {
+                _context.Batches.Update(batch);
+            }
             await _context.SaveChangesAsync();
-        }
-
-        public async Task AddBatchAsync(Batch batch)
-        {
-            await Add(batch);
-        }
-
-        public async Task Update(Batch batch)
-        {
-            _context.Batches.Update(batch);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateBatchAsync(Batch batch)
-        {
-            await Update(batch);
         }
 
         public async Task Delete(int id)
@@ -78,31 +85,27 @@ namespace KooliProjekt.Services
             }
         }
 
-        public async Task DeleteBatchAsync(int id)
+        public Task AddBatchAsync(Batch batch)
         {
-            await Delete(id);
+            throw new NotImplementedException();
         }
 
-        public async Task Save(Batch batch)
+        public Task<string> GetBatchByIdAsync(int value)
         {
-            if (batch.Id == 0)
-            {
-                await _context.Batches.AddAsync(batch);
-            }
-            else
-            {
-                _context.Batches.Update(batch);
-            }
+            throw new NotImplementedException();
+        }
 
-            await _context.SaveChangesAsync();
+        public Task UpdateBatchAsync(Batch batch)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetById(int value)
+        {
+            throw new NotImplementedException();
         }
 
         public bool BatchExists(int id)
-        {
-            return _context.Batches.Any(e => e.Id == id);
-        }
-
-        public void AddAsync(Batch batch)
         {
             throw new NotImplementedException();
         }

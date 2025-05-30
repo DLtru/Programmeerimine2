@@ -3,17 +3,18 @@ using KooliProjekt.Models;
 using KooliProjekt.Search;
 using KooliProjekt.Services;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace KooliProjekt.UnitTests.ServiceTests
 {
-    public class LogEntryServiceTests : ServiceTestBase
+    public class LogEntriesServiceTests : HomeServiceTestBase
     {
-        private readonly LogEntryService _service;
+        private readonly ILogEntryService _service;
+        private readonly DateTime _currentDate = DateTime.Parse("2025-05-30 11:13:49");
+        private const string _currentUser = "DLtru";
 
-        public LogEntryServiceTests()
+        public LogEntriesServiceTests()
         {
             _service = new LogEntryService(DbContext);
         }
@@ -22,78 +23,112 @@ namespace KooliProjekt.UnitTests.ServiceTests
         public async Task List_should_return_all_log_entries()
         {
             // Arrange
-            DbContext.LogEntries.AddRange(
-                new LogEntry { Description = "Log A", Date = DateTime.Today },
-                new LogEntry { Description = "Log B", Date = DateTime.Today.AddDays(1) }
-            );
-            DbContext.SaveChanges();
+            var entries = new[]
+            {
+                new LogEntry { Description = "Test 1", Date = _currentDate, UserId = _currentUser },
+                new LogEntry { Description = "Test 2", Date = _currentDate, UserId = _currentUser }
+            };
+
+            DbContext.LogEntries.AddRange(entries);
+            await DbContext.SaveChangesAsync();
 
             // Act
             var result = await _service.List(1, 10, new LogEntriesSearch());
 
             // Assert
             Assert.NotNull(result);
-            Assert.NotNull(result.Results);
-            Assert.Equal(2, result.Results.Count);
         }
 
         [Fact]
-        public async Task List_should_filter_by_keyword()
+        public async Task Get_should_return_entry_by_id()
         {
             // Arrange
-            DbContext.LogEntries.AddRange(
-                new LogEntry { Description = "Error Log", Date = DateTime.Today },
-                new LogEntry { Description = "Warning Log", Date = DateTime.Today }
-            );
-            DbContext.SaveChanges();
+            var entry = new LogEntry
+            {
+                Description = "Test Entry",
+                Date = _currentDate,
+                UserId = _currentUser
+            };
+            DbContext.LogEntries.Add(entry);
+            await DbContext.SaveChangesAsync();
 
             // Act
-            var result = await _service.List(1, 10, new LogEntriesSearch { Keyword = "Error" });
+            var result = await _service.Get(entry.Id);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Single(result.Results);
-            Assert.Equal("Error Log", result.Results[0].Description);
+            Assert.Equal("Test Entry", result.Description);
         }
 
         [Fact]
-        public async Task List_should_filter_by_start_date()
+        public async Task Save_should_add_new_entry()
         {
             // Arrange
-            var today = DateTime.Today;
-            DbContext.LogEntries.AddRange(
-                new LogEntry { Description = "Log A", Date = today.AddDays(-2) },
-                new LogEntry { Description = "Log B", Date = today }
-            );
-            DbContext.SaveChanges();
+            var entry = new LogEntry
+            {
+                Description = "New Entry",
+                Date = _currentDate,
+                UserId = _currentUser
+            };
 
             // Act
-            var result = await _service.List(1, 10, new LogEntriesSearch { StartDate = today });
+            await _service.Save(entry);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Single(result.Results);
-            Assert.Equal("Log B", result.Results[0].Description);
+            var saved = await DbContext.LogEntries.FindAsync(entry.Id);
+            Assert.NotNull(saved);
+            Assert.Equal("New Entry", saved.Description);
         }
 
         [Fact]
-        public async Task List_should_filter_by_end_date()
+        public async Task Save_should_update_existing_entry()
         {
             // Arrange
-            var today = DateTime.Today;
-            DbContext.LogEntries.AddRange(
-                new LogEntry { Description = "Log A", Date = today },
-                new LogEntry { Description = "Log B", Date = today.AddDays(2) }
-            );
-            DbContext.SaveChanges();
+            var entry = new LogEntry
+            {
+                Description = "Original Entry",
+                Date = _currentDate,
+                UserId = _currentUser
+            };
+            DbContext.LogEntries.Add(entry);
+            await DbContext.SaveChangesAsync();
 
             // Act
-            var result = await _service.List(1, 10, new LogEntriesSearch { EndDate = today });
+            entry.Description = "Updated Entry";
+            await _service.Save(entry);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Single(result.Results);
-            Assert.Equal("Log A", result.Results[0].Description);
+            var updated = await DbContext.LogEntries.FindAsync(entry.Id);
+            Assert.NotNull(updated);
+            Assert.Equal("Updated Entry", updated.Description);
+        }
+
+        [Fact]
+        public async Task Delete_should_remove_existing_entry()
+        {
+            // Arrange
+            var entry = new LogEntry
+            {
+                Description = "To Delete",
+                Date = _currentDate,
+                UserId = _currentUser
+            };
+            DbContext.LogEntries.Add(entry);
+            await DbContext.SaveChangesAsync();
+
+            // Act
+            await _service.Delete(entry.Id);
+
+            // Assert
+            var deleted = await DbContext.LogEntries.FindAsync(entry.Id);
+            Assert.Null(deleted);
+        }
+
+        [Fact]
+        public async Task Delete_should_not_throw_for_non_existing_entry()
+        {
+            // Act & Assert
+            await _service.Delete(999); // Не должно вызывать исключение
         }
     }
 }

@@ -10,6 +10,8 @@ namespace KooliProjekt.Data
         {
         }
 
+
+
         public PagedResult(List<T> results, int rowCount, int page, int pageSize)
         {
             this.results = results;
@@ -25,6 +27,6 @@ namespace KooliProjekt.Data
         public int Page { get; set; }
         public int TotalItems { get; set; }
         public int PageNumber { get; set; }
-       
+        public object Data { get; set; }
     }
 }
